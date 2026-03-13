@@ -1,12 +1,14 @@
+import { useState } from "react";
 import { useQuotes } from "@/hooks/use-products";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Loader2, Trash2, CheckCircle } from "lucide-react";
+import { FileText, Loader2, Trash2, CheckCircle, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
 const AdminQuotes = () => {
   const { data: quotes, isLoading } = useQuotes();
   const queryClient = useQueryClient();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const handleStatusUpdate = async (id: string, status: string) => {
     const { error } = await supabase.from("quotes").update({ status }).eq("id", id);
@@ -25,13 +27,14 @@ const AdminQuotes = () => {
 
   const exportCSV = () => {
     if (!quotes?.length) return;
-    const headers = ["Date", "Name", "Company", "Email", "Phone", "Product", "Qty", "Est. Price", "Status"];
+    const headers = ["Date", "Name", "Company", "Email", "Phone", "Country", "Category", "Sub Category", "Product", "Qty", "Est. Price", "Status", "Message"];
     const rows = quotes.map((q) => [
       new Date(q.created_at).toLocaleDateString(),
-      q.name, q.company, q.email, q.phone, q.product_model,
-      q.quantity, q.estimated_price, q.status,
+      q.name, q.company, q.email, q.phone, q.country,
+      q.category, q.sub_category, q.product_model,
+      q.quantity, q.estimated_price, q.status, q.message,
     ]);
-    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+    const csv = [headers, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -59,52 +62,175 @@ const AdminQuotes = () => {
           <p className="text-sm text-muted-foreground">Quote requests will appear here once customers submit enquiries.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-border">
-          <table className="spec-table w-full text-left">
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Name</th>
-                <th>Company</th>
-                <th>Product</th>
-                <th>Qty</th>
-                <th>Est. Price</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {quotes.map((q) => (
-                <tr key={q.id}>
-                  <td className="whitespace-nowrap">{new Date(q.created_at).toLocaleDateString()}</td>
-                  <td>{q.name}</td>
-                  <td>{q.company}</td>
-                  <td className="font-mono text-primary">{q.product_model}</td>
-                  <td>{q.quantity}</td>
-                  <td className="font-mono">₹ {Number(q.estimated_price).toLocaleString("en-IN")}</td>
-                  <td>{q.email}</td>
-                  <td>
-                    <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded ${q.status === "contacted" ? "bg-tech-green/20 text-tech-green" : "bg-primary/20 text-primary"}`}>
-                      {q.status}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="flex gap-1">
-                      {q.status !== "contacted" && (
-                        <button onClick={() => handleStatusUpdate(q.id, "contacted")} className="rounded p-1.5 text-muted-foreground hover:text-tech-green hover:bg-tech-green/10">
-                          <CheckCircle className="h-4 w-4" />
-                        </button>
-                      )}
-                      <button onClick={() => handleDelete(q.id)} className="rounded p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+        <div className="space-y-3">
+          {quotes.map((q) => {
+            const isExpanded = expandedId === q.id;
+            // Parse configuration from message
+            const configMatch = q.message?.match(/--- Configuration ---\n([\s\S]*)/);
+            const configLines = configMatch ? configMatch[1].trim().split("\n") : [];
+
+            return (
+              <div key={q.id} className="rounded-lg border border-border bg-card overflow-hidden">
+                {/* Summary row */}
+                <div
+                  className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors"
+                  onClick={() => setExpandedId(isExpanded ? null : q.id)}
+                >
+                  <div className="flex-shrink-0">
+                    {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                  </div>
+                  <div className="flex-1 min-w-0 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-sm">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Date</p>
+                      <p className="text-foreground">{new Date(q.created_at).toLocaleDateString()}</p>
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Name</p>
+                      <p className="text-foreground font-medium">{q.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Company</p>
+                      <p className="text-foreground">{q.company}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Product</p>
+                      <p className="font-mono text-primary">{q.product_model}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Qty</p>
+                      <p className="text-foreground">{q.quantity}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Est. Price</p>
+                      <p className="font-mono text-primary font-bold">₹{Number(q.estimated_price).toLocaleString("en-IN")}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Status</p>
+                      <span className={`text-xs font-bold uppercase px-2 py-0.5 rounded ${q.status === "contacted" ? "bg-tech-green/20 text-tech-green" : "bg-primary/20 text-primary"}`}>
+                        {q.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                    {q.status !== "contacted" && (
+                      <button onClick={() => handleStatusUpdate(q.id, "contacted")} className="rounded p-1.5 text-muted-foreground hover:text-tech-green hover:bg-tech-green/10">
+                        <CheckCircle className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button onClick={() => handleDelete(q.id)} className="rounded p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Expanded details */}
+                {isExpanded && (
+                  <div className="border-t border-border bg-muted/20 px-4 py-4 space-y-4">
+                    {/* Contact details */}
+                    <div>
+                      <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2">Contact Details</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-sm">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Name</p>
+                          <p className="text-foreground">{q.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Company</p>
+                          <p className="text-foreground">{q.company}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Email</p>
+                          <a href={`mailto:${q.email}`} className="text-primary hover:underline">{q.email}</a>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Phone</p>
+                          <a href={`tel:${q.phone}`} className="text-primary hover:underline">{q.phone}</a>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Country</p>
+                          <p className="text-foreground">{q.country}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Product details */}
+                    <div>
+                      <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2">Product Details</h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Category</p>
+                          <p className="text-foreground">{q.category}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Sub Category</p>
+                          <p className="text-foreground">{q.sub_category}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Model</p>
+                          <p className="font-mono text-primary font-bold">{q.product_model}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Quantity</p>
+                          <p className="text-foreground">{q.quantity}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Configuration breakdown */}
+                    {configLines.length > 0 && (
+                      <div>
+                        <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2">Configuration & Pricing</h4>
+                        <div className="rounded border border-border overflow-hidden">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-secondary">
+                                <th className="text-left px-3 py-2 text-xs uppercase tracking-wider text-secondary-foreground">Specification</th>
+                                <th className="text-left px-3 py-2 text-xs uppercase tracking-wider text-secondary-foreground">Value</th>
+                                <th className="text-right px-3 py-2 text-xs uppercase tracking-wider text-secondary-foreground">Price</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {configLines.map((line, idx) => {
+                                const match = line.match(/^(.+?):\s*(.+?)\s*\((₹[\d,]+)\)$/);
+                                if (!match) return null;
+                                return (
+                                  <tr key={idx} className="border-b border-border last:border-0">
+                                    <td className="px-3 py-1.5 text-foreground">{match[1]}</td>
+                                    <td className="px-3 py-1.5 font-mono text-muted-foreground">{match[2]}</td>
+                                    <td className="px-3 py-1.5 font-mono text-primary text-right">{match[3]}</td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                            <tfoot>
+                              <tr className="border-t-2 border-primary/30 bg-primary/5">
+                                <td className="px-3 py-2 font-bold text-foreground" colSpan={2}>
+                                  Total {q.quantity > 1 ? `(× ${q.quantity} units)` : ""}
+                                </td>
+                                <td className="px-3 py-2 font-mono font-bold text-primary text-right">
+                                  ₹{Number(q.estimated_price).toLocaleString("en-IN")}
+                                </td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Additional message */}
+                    {q.message && !q.message.startsWith("\n\n---") && (
+                      <div>
+                        <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2">Customer Message</h4>
+                        <p className="text-sm text-foreground bg-muted/30 rounded border border-border p-3 whitespace-pre-wrap">
+                          {q.message.split("--- Configuration ---")[0].trim() || "—"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
