@@ -178,8 +178,7 @@ const QuoteConfigurator = ({
       toast.error("Failed to submit quote. Please try again.");
       return;
     }
-    toast.success("Quote request submitted successfully!");
-    onClose();
+    setStep("thankyou");
   };
 
   const handleChange = (field: string, value: string) => {
