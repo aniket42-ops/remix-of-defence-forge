@@ -50,6 +50,56 @@ export type Database = {
         }
         Relationships: []
       }
+      characteristic_prices: {
+        Row: {
+          characteristic_key: string
+          characteristic_label: string
+          created_at: string
+          id: string
+          is_customizable: boolean
+          option_label: string
+          option_value: string
+          price: number
+          sort_order: number
+          sub_category_id: string
+          updated_at: string
+        }
+        Insert: {
+          characteristic_key: string
+          characteristic_label: string
+          created_at?: string
+          id?: string
+          is_customizable?: boolean
+          option_label: string
+          option_value: string
+          price?: number
+          sort_order?: number
+          sub_category_id: string
+          updated_at?: string
+        }
+        Update: {
+          characteristic_key?: string
+          characteristic_label?: string
+          created_at?: string
+          id?: string
+          is_customizable?: boolean
+          option_label?: string
+          option_value?: string
+          price?: number
+          sort_order?: number
+          sub_category_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "characteristic_prices_sub_category_id_fkey"
+            columns: ["sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "sub_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_variants: {
         Row: {
           base_price: number
