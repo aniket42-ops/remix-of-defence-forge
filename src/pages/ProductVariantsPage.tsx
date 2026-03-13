@@ -1,8 +1,8 @@
 import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
-import { useCategoryBySlug, useSubCategoryBySlug, useProductVariants, type DbProductVariant } from "@/hooks/use-products";
+import { useCategoryBySlug, useSubCategoryBySlug, useProductVariants, useCharacteristicPrices } from "@/hooks/use-products";
 import ProductTable from "@/components/ProductTable";
-import QuoteModal from "@/components/QuoteModal";
+import QuoteConfigurator from "@/components/QuoteConfigurator";
 import { ChevronRight, Loader2 } from "lucide-react";
 
 const ProductVariantsPage = () => {
@@ -10,7 +10,8 @@ const ProductVariantsPage = () => {
   const { data: cat, isLoading: catLoading } = useCategoryBySlug(category || "");
   const { data: subCat, isLoading: subLoading } = useSubCategoryBySlug(cat?.id, sub || "");
   const { data: variants, isLoading: varLoading } = useProductVariants(subCat?.id);
-  const [selectedVariant, setSelectedVariant] = useState<DbProductVariant | null>(null);
+  const { data: charPrices } = useCharacteristicPrices(subCat?.id);
+  const [showConfigurator, setShowConfigurator] = useState(false);
 
   if (catLoading || subLoading || varLoading) {
     return (
@@ -46,14 +47,19 @@ const ProductVariantsPage = () => {
         <p className="text-sm text-muted-foreground mt-2">{subCat.description}</p>
       </div>
 
-      <ProductTable variants={variants || []} onGetQuote={setSelectedVariant} />
+      <ProductTable
+        variants={variants || []}
+        characteristicPrices={charPrices || []}
+        onGetQuote={() => setShowConfigurator(true)}
+      />
 
-      {selectedVariant && (
-        <QuoteModal
-          variant={selectedVariant}
+      {showConfigurator && variants && variants.length > 0 && (
+        <QuoteConfigurator
+          variants={variants}
+          characteristicPrices={charPrices || []}
           category={cat.title}
           subCategory={subCat.title}
-          onClose={() => setSelectedVariant(null)}
+          onClose={() => setShowConfigurator(false)}
         />
       )}
     </div>

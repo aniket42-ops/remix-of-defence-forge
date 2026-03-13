@@ -137,6 +137,22 @@ export function useAllCategoriesWithData() {
   });
 }
 
+export function useCharacteristicPrices(subCategoryId: string | undefined) {
+  return useQuery({
+    queryKey: ["characteristic_prices", subCategoryId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("characteristic_prices")
+        .select("*")
+        .eq("sub_category_id", subCategoryId!)
+        .order("sort_order");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!subCategoryId,
+  });
+}
+
 export function useQuotes() {
   return useQuery({
     queryKey: ["quotes"],
