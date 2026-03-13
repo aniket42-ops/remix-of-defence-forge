@@ -79,14 +79,6 @@ const QuoteModal = ({ variant, category, subCategory, onClose }: QuoteModalProps
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-4 space-y-3">
-            <div className="rounded border border-primary/30 bg-primary/5 p-3 flex items-center gap-3">
-              <Calculator className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">Estimated Quote</p>
-                <p className="font-mono text-lg font-bold text-primary">₹ {estimatedPrice.toLocaleString("en-IN")}</p>
-              </div>
-            </div>
-
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs uppercase tracking-wider text-muted-foreground">Name *</label>
@@ -124,6 +116,16 @@ const QuoteModal = ({ variant, category, subCategory, onClose }: QuoteModalProps
               <label className="text-xs uppercase tracking-wider text-muted-foreground">Message</label>
               <textarea value={form.message} onChange={(e) => handleChange("message", e.target.value)} rows={3} className="mt-1 w-full rounded border border-border bg-input px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none" placeholder="Additional requirements or specifications..." />
             </div>
+
+            {form.name && form.company && form.email && form.phone && form.country && (
+              <div className="rounded border border-primary/30 bg-primary/5 p-3 flex items-center gap-3">
+                <Calculator className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">Estimated Quote</p>
+                  <p className="font-mono text-lg font-bold text-primary">₹ {estimatedPrice.toLocaleString("en-IN")}</p>
+                </div>
+              </div>
+            )}
 
             <button type="submit" disabled={submitting} className="w-full rounded bg-primary py-2.5 text-sm font-bold uppercase tracking-wider text-primary-foreground transition-colors hover:bg-primary/80 flex items-center justify-center gap-2 disabled:opacity-50">
               <Send className="h-4 w-4" />
