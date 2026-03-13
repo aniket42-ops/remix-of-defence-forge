@@ -23,7 +23,7 @@ interface QuoteConfiguratorProps {
   onClose: () => void;
 }
 
-type Step = "configure" | "details" | "summary";
+type Step = "configure" | "details" | "thankyou";
 
 const QuoteConfigurator = ({
   variants,
