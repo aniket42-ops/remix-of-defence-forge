@@ -166,15 +166,3 @@ export function useQuotes() {
     },
   });
 }
-  return useQuery({
-    queryKey: ["quotes"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("quotes")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
-}
