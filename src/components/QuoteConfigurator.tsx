@@ -73,21 +73,21 @@ const QuoteConfigurator = ({
 
   const selectedVariant = variants[selectedModelIdx];
 
-  // Build line items from variant + prices
+  // Build line items mapped to the table columns
   const lineItems = useMemo(() => {
     if (!selectedVariant) return [];
     const items: { label: string; value: string; price: number }[] = [];
 
-    // Height (fixed per model)
+    // Height (Retracted / Erected) - fixed per model
     const heightKey = `${selectedVariant.height_retracted}/${selectedVariant.height_erected}`;
     const heightPrice = priceGroups["height"]?.find((p) => p.option_value === heightKey);
     items.push({
-      label: "Height (Retracted/Erected)",
+      label: "Height (Retracted / Erected)",
       value: `${selectedVariant.height_retracted}m / ${selectedVariant.height_erected}m`,
       price: heightPrice ? Number(heightPrice.price) : 0,
     });
 
-    // Customizable: head_load
+    // Head Load - customizable
     if (customizableKeys.includes("head_load")) {
       const sel = customSelections["head_load"];
       const match = priceGroups["head_load"]?.find((p) => p.option_value === sel);
@@ -98,7 +98,7 @@ const QuoteConfigurator = ({
       });
     }
 
-    // Customizable: wind_area
+    // Wind Area - customizable
     if (customizableKeys.includes("wind_area")) {
       const sel = customSelections["wind_area"];
       const match = priceGroups["wind_area"]?.find((p) => p.option_value === sel);
@@ -109,7 +109,21 @@ const QuoteConfigurator = ({
       });
     }
 
-    // Fixed: weight
+    // Wind Speed - fixed per model
+    items.push({
+      label: "Wind Speed (Op./Surv.)",
+      value: `${selectedVariant.wind_speed_operational}/${selectedVariant.wind_speed_survival} kmph`,
+      price: 0,
+    });
+
+    // Sway
+    items.push({
+      label: "Sway (°)",
+      value: selectedVariant.sway,
+      price: 0,
+    });
+
+    // Weight of Mast
     const weightMatch = priceGroups["weight"]?.find((p) => p.option_value === String(selectedVariant.weight));
     items.push({
       label: "Weight of Mast (Kg)",
@@ -117,7 +131,7 @@ const QuoteConfigurator = ({
       price: weightMatch ? Number(weightMatch.price) : 0,
     });
 
-    // Fixed: sections
+    // No. of Sections
     const secMatch = priceGroups["sections"]?.find((p) => p.option_value === String(selectedVariant.sections));
     items.push({
       label: "No. of Sections",
@@ -125,25 +139,34 @@ const QuoteConfigurator = ({
       price: secMatch ? Number(secMatch.price) : 0,
     });
 
-    // Fixed: tube_dia
+    // Tube Dia
     const tubeVal = selectedVariant.tube_dia?.replace(/\s/g, "");
     const tubeMatch = priceGroups["tube_dia"]?.find((p) => p.option_value === tubeVal);
     items.push({
-      label: "Tube Diameter",
+      label: "Tube Dia",
       value: selectedVariant.tube_dia,
       price: tubeMatch ? Number(tubeMatch.price) : 0,
     });
 
-    // Fixed: guy_ropes_ground
+    // Ground Mount - No. of Guy Ropes
     const guyVal = selectedVariant.guy_ropes?.replace(/\s/g, "");
     const guyMatch = priceGroups["guy_ropes_ground"]?.find((p) => p.option_value === guyVal);
     items.push({
-      label: "Guy Ropes (Ground)",
+      label: "Ground Mount — Guy Ropes",
       value: selectedVariant.guy_ropes,
       price: guyMatch ? Number(guyMatch.price) : 0,
     });
 
-    // Fixed: tripod_weight
+    // Tripod Mount - No. of Guy Ropes
+    const tripodGuyVal = ((selectedVariant as any).tripod_guy_ropes || selectedVariant.guy_ropes)?.replace(/\s/g, "");
+    const tripodGuyMatch = priceGroups["guy_ropes_tripod"]?.find((p) => p.option_value === tripodGuyVal);
+    items.push({
+      label: "Tripod Mount — Guy Ropes",
+      value: (selectedVariant as any).tripod_guy_ropes || selectedVariant.guy_ropes,
+      price: tripodGuyMatch ? Number(tripodGuyMatch.price) : 0,
+    });
+
+    // Tripod Weight
     const tripodMatch = priceGroups["tripod_weight"]?.find((p) => p.option_value === String(selectedVariant.tripod_weight));
     items.push({
       label: "Tripod Weight (Kg)",
@@ -213,7 +236,7 @@ const QuoteConfigurator = ({
         {step === "configure" && (
           <div className="p-4 space-y-4">
             <div>
-              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">Select Model</label>
+              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">Select Model (Height)</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {variants.map((v, idx) => (
                   <button
@@ -273,6 +296,33 @@ const QuoteConfigurator = ({
                 className="w-24 rounded border border-border bg-input px-3 py-2 text-sm text-foreground font-mono focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
+
+            {/* Configuration Summary Preview */}
+            {selectedVariant && (
+              <div className="rounded border border-border bg-muted/30 p-3">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Selected Configuration</p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
+                  <span className="text-muted-foreground">Height:</span>
+                  <span className="text-foreground">{selectedVariant.height_retracted}m / {selectedVariant.height_erected}m</span>
+                  <span className="text-muted-foreground">Wind Speed:</span>
+                  <span className="text-foreground">{selectedVariant.wind_speed_operational}/{selectedVariant.wind_speed_survival} kmph</span>
+                  <span className="text-muted-foreground">Sway:</span>
+                  <span className="text-foreground">{selectedVariant.sway}</span>
+                  <span className="text-muted-foreground">Weight:</span>
+                  <span className="text-foreground">{selectedVariant.weight} Kg</span>
+                  <span className="text-muted-foreground">Sections:</span>
+                  <span className="text-foreground">{selectedVariant.sections}</span>
+                  <span className="text-muted-foreground">Tube Dia:</span>
+                  <span className="text-foreground">{selectedVariant.tube_dia}</span>
+                  <span className="text-muted-foreground">Ground Guy Ropes:</span>
+                  <span className="text-foreground">{selectedVariant.guy_ropes}</span>
+                  <span className="text-muted-foreground">Tripod Guy Ropes:</span>
+                  <span className="text-foreground">{(selectedVariant as any).tripod_guy_ropes || selectedVariant.guy_ropes}</span>
+                  <span className="text-muted-foreground">Tripod Weight:</span>
+                  <span className="text-foreground">{selectedVariant.tripod_weight} Kg</span>
+                </div>
+              </div>
+            )}
 
             <button
               onClick={() => setStep("details")}

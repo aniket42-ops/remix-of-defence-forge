@@ -1,0 +1,1 @@
+ALTER TABLE public.product_variants ADD COLUMN tripod_guy_ropes text NOT NULL DEFAULT '';

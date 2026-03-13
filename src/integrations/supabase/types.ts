@@ -113,6 +113,7 @@ export type Database = {
           sections: number
           sub_category_id: string
           sway: string
+          tripod_guy_ropes: string
           tripod_weight: number
           tube_dia: string
           updated_at: string
@@ -134,6 +135,7 @@ export type Database = {
           sections?: number
           sub_category_id: string
           sway?: string
+          tripod_guy_ropes?: string
           tripod_weight?: number
           tube_dia?: string
           updated_at?: string
@@ -155,6 +157,7 @@ export type Database = {
           sections?: number
           sub_category_id?: string
           sway?: string
+          tripod_guy_ropes?: string
           tripod_weight?: number
           tube_dia?: string
           updated_at?: string
