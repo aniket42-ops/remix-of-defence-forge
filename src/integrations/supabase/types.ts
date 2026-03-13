@@ -14,7 +14,211 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          image_url: string
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
+      product_variants: {
+        Row: {
+          base_price: number
+          created_at: string
+          guy_ropes: string
+          head_load: number
+          height_erected: number
+          height_retracted: number
+          id: string
+          model_no: string
+          sections: number
+          sub_category_id: string
+          sway: string
+          tripod_weight: number
+          tube_dia: string
+          updated_at: string
+          visible: boolean
+          weight: number
+          wind_area: number
+          wind_speed_operational: number
+          wind_speed_survival: number
+        }
+        Insert: {
+          base_price?: number
+          created_at?: string
+          guy_ropes?: string
+          head_load?: number
+          height_erected?: number
+          height_retracted?: number
+          id?: string
+          model_no: string
+          sections?: number
+          sub_category_id: string
+          sway?: string
+          tripod_weight?: number
+          tube_dia?: string
+          updated_at?: string
+          visible?: boolean
+          weight?: number
+          wind_area?: number
+          wind_speed_operational?: number
+          wind_speed_survival?: number
+        }
+        Update: {
+          base_price?: number
+          created_at?: string
+          guy_ropes?: string
+          head_load?: number
+          height_erected?: number
+          height_retracted?: number
+          id?: string
+          model_no?: string
+          sections?: number
+          sub_category_id?: string
+          sway?: string
+          tripod_weight?: number
+          tube_dia?: string
+          updated_at?: string
+          visible?: boolean
+          weight?: number
+          wind_area?: number
+          wind_speed_operational?: number
+          wind_speed_survival?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_variants_sub_category_id_fkey"
+            columns: ["sub_category_id"]
+            isOneToOne: false
+            referencedRelation: "sub_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quotes: {
+        Row: {
+          category: string
+          company: string
+          country: string
+          created_at: string
+          email: string
+          estimated_price: number
+          id: string
+          message: string
+          name: string
+          phone: string
+          product_model: string
+          quantity: number
+          status: string
+          sub_category: string
+        }
+        Insert: {
+          category: string
+          company?: string
+          country?: string
+          created_at?: string
+          email: string
+          estimated_price?: number
+          id?: string
+          message?: string
+          name: string
+          phone?: string
+          product_model: string
+          quantity?: number
+          status?: string
+          sub_category: string
+        }
+        Update: {
+          category?: string
+          company?: string
+          country?: string
+          created_at?: string
+          email?: string
+          estimated_price?: number
+          id?: string
+          message?: string
+          name?: string
+          phone?: string
+          product_model?: string
+          quantity?: number
+          status?: string
+          sub_category?: string
+        }
+        Relationships: []
+      }
+      sub_categories: {
+        Row: {
+          category_id: string
+          created_at: string
+          description: string
+          id: string
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          description: string
+          id?: string
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sub_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
