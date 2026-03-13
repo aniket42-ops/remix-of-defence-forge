@@ -27,49 +27,22 @@ const ProductTable = ({ variants, onGetQuote }: ProductTableProps) => {
             </tr>
           </thead>
           <tbody>
-            {variants.map((v) => {
-              const heightKey = `${v.height_retracted}/${v.height_erected}`;
-              return (
+            {variants.map((v) => (
                 <tr key={v.id}>
                   <td className="font-semibold text-primary whitespace-nowrap">{v.model_no}</td>
-                  <td>
-                    {v.height_retracted}
-                    <PriceCell price={findPrice(characteristicPrices, "height", heightKey)} />
-                  </td>
+                  <td>{v.height_retracted}</td>
                   <td>{v.height_erected}</td>
-                  <td>
-                    {v.head_load}
-                    <PriceCell price={findPrice(characteristicPrices, "head_load", v.head_load)} />
-                  </td>
-                  <td>
-                    {v.wind_area}
-                    <PriceCell price={findPrice(characteristicPrices, "wind_area", v.wind_area)} />
-                  </td>
+                  <td>{v.head_load}</td>
+                  <td>{v.wind_area}</td>
                   <td>{v.wind_speed_operational}/{v.wind_speed_survival}</td>
                   <td>{v.sway}</td>
-                  <td>
-                    {v.weight}
-                    <PriceCell price={findPrice(characteristicPrices, "weight", v.weight)} />
-                  </td>
-                  <td>
-                    {v.sections}
-                    <PriceCell price={findPrice(characteristicPrices, "sections", v.sections)} />
-                  </td>
-                  <td>
-                    {v.tube_dia}
-                    <PriceCell price={findPrice(characteristicPrices, "tube_dia", v.tube_dia?.replace(/\s/g, ""))} />
-                  </td>
-                  <td>
-                    {v.guy_ropes}
-                    <PriceCell price={findPrice(characteristicPrices, "guy_ropes_ground", v.guy_ropes?.replace(/\s/g, ""))} />
-                  </td>
-                  <td>
-                    {v.tripod_weight}
-                    <PriceCell price={findPrice(characteristicPrices, "tripod_weight", v.tripod_weight)} />
-                  </td>
+                  <td>{v.weight}</td>
+                  <td>{v.sections}</td>
+                  <td>{v.tube_dia}</td>
+                  <td>{v.guy_ropes}</td>
+                  <td>{v.tripod_weight}</td>
                 </tr>
-              );
-            })}
+            ))}
           </tbody>
         </table>
       </div>
