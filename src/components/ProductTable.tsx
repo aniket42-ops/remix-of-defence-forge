@@ -1,32 +1,9 @@
 import { DbProductVariant } from "@/hooks/use-products";
 
-interface CharPrice {
-  characteristic_key: string;
-  option_value: string;
-  price: number;
-}
-
 interface ProductTableProps {
   variants: DbProductVariant[];
-  characteristicPrices: CharPrice[];
   onGetQuote: () => void;
 }
-
-const findPrice = (prices: CharPrice[], key: string, value: string | number): number | null => {
-  const match = prices.find(
-    (p) => p.characteristic_key === key && p.option_value === String(value)
-  );
-  return match ? Number(match.price) : null;
-};
-
-const PriceCell = ({ price }: { price: number | null }) => {
-  if (price === null || price === 0) return null;
-  return (
-    <span className="block text-[10px] text-primary font-mono">
-      ₹{price.toLocaleString("en-IN")}
-    </span>
-  );
-};
 
 const ProductTable = ({ variants, characteristicPrices, onGetQuote }: ProductTableProps) => {
   return (
