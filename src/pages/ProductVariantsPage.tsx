@@ -49,7 +49,6 @@ const ProductVariantsPage = () => {
 
       <ProductTable
         variants={variants || []}
-        characteristicPrices={charPrices || []}
         onGetQuote={() => setShowConfigurator(true)}
       />
 

@@ -23,7 +23,7 @@ interface QuoteConfiguratorProps {
   onClose: () => void;
 }
 
-type Step = "configure" | "details" | "summary";
+type Step = "configure" | "details" | "thankyou";
 
 const QuoteConfigurator = ({
   variants,
@@ -178,8 +178,7 @@ const QuoteConfigurator = ({
       toast.error("Failed to submit quote. Please try again.");
       return;
     }
-    toast.success("Quote request submitted successfully!");
-    onClose();
+    setStep("thankyou");
   };
 
   const handleChange = (field: string, value: string) => {
@@ -195,14 +194,14 @@ const QuoteConfigurator = ({
         <div className="flex items-center justify-between border-b border-border p-4">
           <div>
             <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-foreground">
-              {step === "configure" ? "Configure Your Requirement" : step === "details" ? "Your Details" : "Estimated Quote"}
+              {step === "configure" ? "Configure Your Requirement" : step === "details" ? "Your Details" : "Thank You!"}
             </h2>
             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground font-mono">
               <span className={step === "configure" ? "text-primary" : ""}>Configure</span>
               <ChevronRight className="h-3 w-3" />
               <span className={step === "details" ? "text-primary" : ""}>Details</span>
               <ChevronRight className="h-3 w-3" />
-              <span className={step === "summary" ? "text-primary" : ""}>Summary</span>
+              <span className={step === "thankyou" ? "text-primary" : ""}>Quote</span>
             </div>
           </div>
           <button onClick={onClose} className="rounded p-1 text-muted-foreground hover:text-foreground">
@@ -213,7 +212,6 @@ const QuoteConfigurator = ({
         {/* Step 1: Configure */}
         {step === "configure" && (
           <div className="p-4 space-y-4">
-            {/* Model Selection */}
             <div>
               <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">Select Model</label>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -236,7 +234,6 @@ const QuoteConfigurator = ({
               </div>
             </div>
 
-            {/* Customizable options */}
             {customizableKeys.map((key) => {
               const options = priceGroups[key];
               const label = options[0]?.characteristic_label || key;
@@ -259,9 +256,6 @@ const QuoteConfigurator = ({
                         }`}
                       >
                         {opt.option_label}
-                        <span className="block text-[10px] text-primary">
-                          ₹{Number(opt.price).toLocaleString("en-IN")}
-                        </span>
                       </button>
                     ))}
                   </div>
@@ -269,7 +263,6 @@ const QuoteConfigurator = ({
               );
             })}
 
-            {/* Quantity */}
             <div>
               <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">Quantity</label>
               <input
@@ -327,19 +320,25 @@ const QuoteConfigurator = ({
                 Back
               </button>
               <button
-                onClick={() => setStep("summary")}
-                disabled={!isFormValid}
+                onClick={handleSubmit}
+                disabled={!isFormValid || submitting}
                 className="flex-1 rounded bg-primary py-2.5 text-sm font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/80 disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                View Estimate <ChevronRight className="h-4 w-4" />
+                <Send className="h-4 w-4" />
+                {submitting ? "Submitting..." : "Submit Quote Request"}
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Summary */}
-        {step === "summary" && (
+        {/* Step 3: Thank You + Estimated Quote */}
+        {step === "thankyou" && (
           <div className="p-4 space-y-4">
+            <div className="rounded border border-primary/30 bg-primary/5 p-4 text-center">
+              <p className="text-lg font-bold text-foreground">Thank you for your interest, {form.name}!</p>
+              <p className="text-sm text-muted-foreground mt-1">Here is your estimated quote based on the selected configuration.</p>
+            </div>
+
             <div className="rounded border border-border bg-muted/30 p-3">
               <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Selected Model</p>
               <p className="font-mono text-lg font-bold text-primary">{selectedVariant?.model_no}</p>
@@ -388,19 +387,12 @@ const QuoteConfigurator = ({
               </table>
             </div>
 
-            <div className="flex gap-3">
-              <button onClick={() => setStep("details")} className="flex-1 rounded border border-border py-2.5 text-sm font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground">
-                Back
-              </button>
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="flex-1 rounded bg-primary py-2.5 text-sm font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/80 disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                <Send className="h-4 w-4" />
-                {submitting ? "Submitting..." : "Submit Quote Request"}
-              </button>
-            </div>
+            <button
+              onClick={onClose}
+              className="w-full rounded bg-primary py-2.5 text-sm font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/80"
+            >
+              Close
+            </button>
           </div>
         )}
       </div>

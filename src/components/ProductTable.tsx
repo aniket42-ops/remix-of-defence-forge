@@ -1,34 +1,11 @@
 import { DbProductVariant } from "@/hooks/use-products";
 
-interface CharPrice {
-  characteristic_key: string;
-  option_value: string;
-  price: number;
-}
-
 interface ProductTableProps {
   variants: DbProductVariant[];
-  characteristicPrices: CharPrice[];
   onGetQuote: () => void;
 }
 
-const findPrice = (prices: CharPrice[], key: string, value: string | number): number | null => {
-  const match = prices.find(
-    (p) => p.characteristic_key === key && p.option_value === String(value)
-  );
-  return match ? Number(match.price) : null;
-};
-
-const PriceCell = ({ price }: { price: number | null }) => {
-  if (price === null || price === 0) return null;
-  return (
-    <span className="block text-[10px] text-primary font-mono">
-      ₹{price.toLocaleString("en-IN")}
-    </span>
-  );
-};
-
-const ProductTable = ({ variants, characteristicPrices, onGetQuote }: ProductTableProps) => {
+const ProductTable = ({ variants, onGetQuote }: ProductTableProps) => {
   return (
     <div>
       <div className="overflow-x-auto rounded-lg border border-border">
@@ -50,49 +27,22 @@ const ProductTable = ({ variants, characteristicPrices, onGetQuote }: ProductTab
             </tr>
           </thead>
           <tbody>
-            {variants.map((v) => {
-              const heightKey = `${v.height_retracted}/${v.height_erected}`;
-              return (
+            {variants.map((v) => (
                 <tr key={v.id}>
                   <td className="font-semibold text-primary whitespace-nowrap">{v.model_no}</td>
-                  <td>
-                    {v.height_retracted}
-                    <PriceCell price={findPrice(characteristicPrices, "height", heightKey)} />
-                  </td>
+                  <td>{v.height_retracted}</td>
                   <td>{v.height_erected}</td>
-                  <td>
-                    {v.head_load}
-                    <PriceCell price={findPrice(characteristicPrices, "head_load", v.head_load)} />
-                  </td>
-                  <td>
-                    {v.wind_area}
-                    <PriceCell price={findPrice(characteristicPrices, "wind_area", v.wind_area)} />
-                  </td>
+                  <td>{v.head_load}</td>
+                  <td>{v.wind_area}</td>
                   <td>{v.wind_speed_operational}/{v.wind_speed_survival}</td>
                   <td>{v.sway}</td>
-                  <td>
-                    {v.weight}
-                    <PriceCell price={findPrice(characteristicPrices, "weight", v.weight)} />
-                  </td>
-                  <td>
-                    {v.sections}
-                    <PriceCell price={findPrice(characteristicPrices, "sections", v.sections)} />
-                  </td>
-                  <td>
-                    {v.tube_dia}
-                    <PriceCell price={findPrice(characteristicPrices, "tube_dia", v.tube_dia?.replace(/\s/g, ""))} />
-                  </td>
-                  <td>
-                    {v.guy_ropes}
-                    <PriceCell price={findPrice(characteristicPrices, "guy_ropes_ground", v.guy_ropes?.replace(/\s/g, ""))} />
-                  </td>
-                  <td>
-                    {v.tripod_weight}
-                    <PriceCell price={findPrice(characteristicPrices, "tripod_weight", v.tripod_weight)} />
-                  </td>
+                  <td>{v.weight}</td>
+                  <td>{v.sections}</td>
+                  <td>{v.tube_dia}</td>
+                  <td>{v.guy_ropes}</td>
+                  <td>{v.tripod_weight}</td>
                 </tr>
-              );
-            })}
+            ))}
           </tbody>
         </table>
       </div>
