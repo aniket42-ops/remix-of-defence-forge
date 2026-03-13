@@ -5,7 +5,7 @@ interface ProductTableProps {
   onGetQuote: () => void;
 }
 
-const ProductTable = ({ variants, characteristicPrices, onGetQuote }: ProductTableProps) => {
+const ProductTable = ({ variants, onGetQuote }: ProductTableProps) => {
   return (
     <div>
       <div className="overflow-x-auto rounded-lg border border-border">
