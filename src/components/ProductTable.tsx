@@ -1,9 +1,9 @@
-import { ProductVariant } from "@/data/products";
+import { DbProductVariant } from "@/hooks/use-products";
 import { FileText } from "lucide-react";
 
 interface ProductTableProps {
-  variants: ProductVariant[];
-  onGetQuote: (variant: ProductVariant) => void;
+  variants: DbProductVariant[];
+  onGetQuote: (variant: DbProductVariant) => void;
 }
 
 const ProductTable = ({ variants, onGetQuote }: ProductTableProps) => {
@@ -30,20 +30,20 @@ const ProductTable = ({ variants, onGetQuote }: ProductTableProps) => {
         </thead>
         <tbody>
           {variants.map((v) => (
-            <tr key={v.modelNo}>
-              <td className="font-semibold text-primary whitespace-nowrap">{v.modelNo}</td>
-              <td>{v.heightRetracted}</td>
-              <td>{v.heightErected}</td>
-              <td>{v.headLoad}</td>
-              <td>{v.windArea}</td>
-              <td>{v.windSpeedOperational}</td>
-              <td>{v.windSpeedSurvival}</td>
+            <tr key={v.id}>
+              <td className="font-semibold text-primary whitespace-nowrap">{v.model_no}</td>
+              <td>{v.height_retracted}</td>
+              <td>{v.height_erected}</td>
+              <td>{v.head_load}</td>
+              <td>{v.wind_area}</td>
+              <td>{v.wind_speed_operational}</td>
+              <td>{v.wind_speed_survival}</td>
               <td>{v.sway}</td>
               <td>{v.weight}</td>
               <td>{v.sections}</td>
-              <td>{v.tubeDia}</td>
-              <td>{v.guyRopes}</td>
-              <td>{v.tripodWeight}</td>
+              <td>{v.tube_dia}</td>
+              <td>{v.guy_ropes}</td>
+              <td>{v.tripod_weight}</td>
               <td>
                 <button
                   onClick={() => onGetQuote(v)}

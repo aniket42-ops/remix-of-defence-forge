@@ -1,9 +1,11 @@
-import { categories } from "@/data/products";
+import { useCategories } from "@/hooks/use-products";
 import CategoryCard from "@/components/CategoryCard";
-import { Shield, ChevronDown } from "lucide-react";
+import { Shield, ChevronDown, Loader2 } from "lucide-react";
 import heroBanner from "@/assets/hero-banner.jpg";
 
 const Index = () => {
+  const { data: categories, isLoading } = useCategories();
+
   return (
     <div>
       {/* Hero */}
@@ -43,17 +45,23 @@ const Index = () => {
             Equipment Catalogue
           </h2>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((cat) => (
-            <CategoryCard
-              key={cat.slug}
-              slug={cat.slug}
-              title={cat.title}
-              description={cat.description}
-              image={cat.image}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {categories?.map((cat) => (
+              <CategoryCard
+                key={cat.slug}
+                slug={cat.slug}
+                title={cat.title}
+                description={cat.description}
+                image={cat.resolvedImage}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Stats */}

@@ -1,15 +1,24 @@
 import { useParams, Link } from "react-router-dom";
 import { useState } from "react";
-import { getCategoryBySlug, getSubCategory, ProductVariant } from "@/data/products";
+import { useCategoryBySlug, useSubCategoryBySlug, useProductVariants, type DbProductVariant } from "@/hooks/use-products";
 import ProductTable from "@/components/ProductTable";
 import QuoteModal from "@/components/QuoteModal";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 
 const ProductVariantsPage = () => {
   const { category, sub } = useParams<{ category: string; sub: string }>();
-  const cat = getCategoryBySlug(category || "");
-  const subCat = getSubCategory(category || "", sub || "");
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const { data: cat, isLoading: catLoading } = useCategoryBySlug(category || "");
+  const { data: subCat, isLoading: subLoading } = useSubCategoryBySlug(cat?.id, sub || "");
+  const { data: variants, isLoading: varLoading } = useProductVariants(subCat?.id);
+  const [selectedVariant, setSelectedVariant] = useState<DbProductVariant | null>(null);
+
+  if (catLoading || subLoading || varLoading) {
+    return (
+      <div className="container py-20 flex justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!cat || !subCat) {
     return (
@@ -21,7 +30,6 @@ const ProductVariantsPage = () => {
 
   return (
     <div className="container py-8">
-      {/* Breadcrumb */}
       <nav className="flex items-center gap-1 text-xs font-mono text-muted-foreground mb-6 flex-wrap">
         <Link to="/" className="hover:text-primary">Home</Link>
         <ChevronRight className="h-3 w-3" />
@@ -38,7 +46,7 @@ const ProductVariantsPage = () => {
         <p className="text-sm text-muted-foreground mt-2">{subCat.description}</p>
       </div>
 
-      <ProductTable variants={subCat.variants} onGetQuote={setSelectedVariant} />
+      <ProductTable variants={variants || []} onGetQuote={setSelectedVariant} />
 
       {selectedVariant && (
         <QuoteModal
