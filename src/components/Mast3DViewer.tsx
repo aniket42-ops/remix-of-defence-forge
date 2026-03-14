@@ -1,9 +1,7 @@
 import { useRef, useState, useCallback } from "react";
 import mastImage from "@/assets/mast-3d.png";
-import { RotateCcw, Move3D } from "lucide-react";
 
 const Mast3DViewer = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(-5);
   const [rotateY, setRotateY] = useState(0);
   const [scale, setScale] = useState(1);
@@ -37,59 +35,32 @@ const Mast3DViewer = () => {
     setScale((prev) => Math.max(0.5, Math.min(2.5, prev - e.deltaY * 0.001)));
   }, []);
 
-  const handleReset = () => {
-    setRotateX(-5);
-    setRotateY(0);
-    setScale(1);
-  };
-
   return (
-    <div className="relative rounded-lg border border-border bg-card overflow-hidden">
-      <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
-        <span className="flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded">
-          <Move3D className="h-3.5 w-3.5" />
-          3D View
-        </span>
-        <button
-          onClick={handleReset}
-          className="flex items-center gap-1 bg-muted text-muted-foreground hover:text-foreground text-xs px-2 py-1 rounded transition-colors"
-        >
-          <RotateCcw className="h-3 w-3" />
-          Reset
-        </button>
-      </div>
-
-      <div className="absolute bottom-3 left-3 z-10 text-[10px] uppercase tracking-wider text-muted-foreground">
-        Drag to rotate • Scroll to zoom
-      </div>
-
+    <div
+      className="shrink-0 w-32 h-40 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+      style={{ perspective: "800px" }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerLeave={handlePointerUp}
+      onWheel={handleWheel}
+    >
       <div
-        ref={containerRef}
-        className="h-[500px] flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
-        style={{ perspective: "1200px" }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerLeave={handlePointerUp}
-        onWheel={handleWheel}
+        style={{
+          transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`,
+          transition: isDragging ? "none" : "transform 0.3s ease-out",
+          transformStyle: "preserve-3d",
+        }}
       >
-        <div
+        <img
+          src={mastImage}
+          alt="PTM Light Duty Mast"
+          className="h-36 w-auto object-contain pointer-events-none opacity-80"
+          draggable={false}
           style={{
-            transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`,
-            transition: isDragging ? "none" : "transform 0.3s ease-out",
-            transformStyle: "preserve-3d",
+            filter: `drop-shadow(${-rotateY * 0.2}px ${3 + rotateX * 0.15}px 8px hsl(var(--primary) / 0.12))`,
           }}
-        >
-          <img
-            src={mastImage}
-            alt="PTM Light Duty Telescopic Mast - 3D View"
-            className="h-[450px] w-auto object-contain pointer-events-none"
-            draggable={false}
-            style={{
-              filter: `drop-shadow(${-rotateY * 0.3}px ${4 + rotateX * 0.2}px 12px hsl(var(--primary) / 0.15))`,
-            }}
-          />
-        </div>
+        />
       </div>
     </div>
   );
