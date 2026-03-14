@@ -11,25 +11,25 @@ const Index = () => {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={heroBanner} alt="Defence Manufacturing" className="h-full w-full object-cover opacity-30" />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+          <img src={heroBanner} alt="Defence Manufacturing" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-navbar/70" />
         </div>
         <div className="relative container py-20 md:py-32 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 mb-6">
-            <Shield className="h-4 w-4 text-primary" />
-            <span className="font-mono text-xs uppercase tracking-widest text-primary">Defence Grade Equipment</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 mb-6">
+            <Shield className="h-4 w-4 text-white" />
+            <span className="font-mono text-xs uppercase tracking-widest text-white">Defence Grade Equipment</span>
           </div>
-          <h1 className="font-heading text-4xl md:text-6xl font-bold uppercase tracking-wider text-foreground mb-4">
+          <h1 className="font-heading text-4xl md:text-6xl font-bold uppercase tracking-wider text-white mb-4">
             Defence Manufacturing<br />
-            <span className="text-primary">Services</span>
+            <span className="text-accent">Services</span>
           </h1>
-          <p className="max-w-2xl mx-auto text-muted-foreground mb-8">
+          <p className="max-w-2xl mx-auto text-white/80 mb-8">
             Precision-engineered telescopic masts, tripods, pedestals and junction systems 
             for military, surveillance and communication applications.
           </p>
           <a
             href="#catalogue"
-            className="inline-flex items-center gap-2 rounded bg-primary px-6 py-3 font-heading text-sm font-bold uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/80"
+            className="inline-flex items-center gap-2 rounded bg-primary px-6 py-3 font-heading text-sm font-bold uppercase tracking-widest text-primary-foreground transition-colors hover:bg-primary/90"
           >
             Browse Catalogue
             <ChevronDown className="h-4 w-4" />
