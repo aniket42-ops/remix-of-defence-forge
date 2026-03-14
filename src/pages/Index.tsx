@@ -65,7 +65,7 @@ const Index = () => {
       </section>
 
       {/* Stats */}
-      <section className="border-t border-border bg-card tech-grid">
+      <section className="border-t border-border bg-navbar">
         <div className="container py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
@@ -75,8 +75,8 @@ const Index = () => {
               { value: "ISO 9001", label: "Certified" },
             ].map((stat) => (
               <div key={stat.label}>
-                <p className="font-heading text-3xl font-bold text-primary">{stat.value}</p>
-                <p className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-1">
+                <p className="font-heading text-3xl font-bold text-white">{stat.value}</p>
+                <p className="font-mono text-xs uppercase tracking-wider text-white/60 mt-1">
                   {stat.label}
                 </p>
               </div>
