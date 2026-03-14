@@ -62,21 +62,19 @@ const ProductVariantsPage = () => {
         <span className="text-foreground">{subCat.title}</span>
       </nav>
 
-      <div className="mb-8">
-        <p className="font-mono text-xs uppercase tracking-widest text-primary mb-1">Technical Specifications</p>
-        <h1 className="font-heading text-2xl md:text-3xl font-bold uppercase tracking-wider text-foreground">
-          {subCat.title}
-          {mt ? ` — ${mt.title}` : ""}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-2">{subCat.description}</p>
-      </div>
-
-      {/* Show 3D viewer for PTM light duty masts */}
-      {subSlug === "light-duty" && mastType === "pneumatic-masts" && (
-        <div className="mb-8">
-          <Mast3DViewer />
+      <div className="mb-8 flex items-center justify-between gap-6">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-widest text-primary mb-1">Technical Specifications</p>
+          <h1 className="font-heading text-2xl md:text-3xl font-bold uppercase tracking-wider text-foreground">
+            {subCat.title}
+            {mt ? ` — ${mt.title}` : ""}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-2">{subCat.description}</p>
         </div>
-      )}
+        {subSlug === "light-duty" && isMultiStepFlow && (
+          <Mast3DViewer />
+        )}
+      </div>
 
       <ProductTable
         variants={variants || []}
