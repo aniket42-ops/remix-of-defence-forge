@@ -20,6 +20,9 @@ interface QuoteConfiguratorProps {
   characteristicPrices: CharPrice[];
   category: string;
   subCategory: string;
+  mastTypeInitials?: string;
+  mastTypeName?: string;
+  technologyName?: string;
   onClose: () => void;
 }
 
@@ -30,37 +33,21 @@ const QuoteConfigurator = ({
   characteristicPrices,
   category,
   subCategory,
+  mastTypeInitials,
+  mastTypeName,
+  technologyName,
   onClose,
 }: QuoteConfiguratorProps) => {
   const [step, setStep] = useState<Step>("configure");
-  const [selectedModelIdx, setSelectedModelIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
-  // Group prices by characteristic_key
-  const priceGroups = useMemo(() => {
-    const groups: Record<string, CharPrice[]> = {};
-    characteristicPrices.forEach((cp) => {
-      if (!groups[cp.characteristic_key]) groups[cp.characteristic_key] = [];
-      groups[cp.characteristic_key].push(cp);
-    });
-    return groups;
-  }, [characteristicPrices]);
-
-  // Customizable keys
-  const customizableKeys = useMemo(
-    () => Object.keys(priceGroups).filter((k) => priceGroups[k].some((p) => p.is_customizable)),
-    [priceGroups]
-  );
-
-  // Selected customizable options (key -> option_value)
-  const [customSelections, setCustomSelections] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    customizableKeys.forEach((k) => {
-      if (priceGroups[k].length > 0) init[k] = priceGroups[k][0].option_value;
-    });
-    return init;
-  });
+  // Step-by-step selections
+  const [selectedErected, setSelectedErected] = useState<number | null>(null);
+  const [selectedRetracted, setSelectedRetracted] = useState<number | null>(null);
+  const [selectedHeadLoad, setSelectedHeadLoad] = useState<number | null>(null);
+  const [selectedWindArea, setSelectedWindArea] = useState<number | null>(null);
+  const [selectedGuyed, setSelectedGuyed] = useState<"guyed" | "unguyed" | null>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -71,118 +58,114 @@ const QuoteConfigurator = ({
     message: "",
   });
 
-  const selectedVariant = variants[selectedModelIdx];
+  // Progressive filtering
+  const erectedOptions = useMemo(
+    () => [...new Set(variants.map((v) => Number(v.height_erected)))].sort((a, b) => a - b),
+    [variants]
+  );
 
-  // Build line items mapped to the table columns
-  const lineItems = useMemo(() => {
-    if (!selectedVariant) return [];
-    const items: { label: string; value: string; price: number }[] = [];
+  const filteredByErected = useMemo(
+    () => (selectedErected !== null ? variants.filter((v) => Number(v.height_erected) === selectedErected) : []),
+    [variants, selectedErected]
+  );
 
-    // Height (Retracted / Erected) - fixed per model
-    const heightKey = `${selectedVariant.height_retracted}/${selectedVariant.height_erected}`;
-    const heightPrice = priceGroups["height"]?.find((p) => p.option_value === heightKey);
-    items.push({
-      label: "Height (Retracted / Erected)",
-      value: `${selectedVariant.height_retracted}m / ${selectedVariant.height_erected}m`,
-      price: heightPrice ? Number(heightPrice.price) : 0,
-    });
+  const retractedOptions = useMemo(
+    () => [...new Set(filteredByErected.map((v) => Number(v.height_retracted)))].sort((a, b) => a - b),
+    [filteredByErected]
+  );
 
-    // Head Load - customizable
-    if (customizableKeys.includes("head_load")) {
-      const sel = customSelections["head_load"];
-      const match = priceGroups["head_load"]?.find((p) => p.option_value === sel);
-      items.push({
-        label: "Head Load (Kg)",
-        value: match?.option_label || sel,
-        price: match ? Number(match.price) : 0,
-      });
-    }
+  const filteredByRetracted = useMemo(
+    () =>
+      selectedRetracted !== null
+        ? filteredByErected.filter((v) => Number(v.height_retracted) === selectedRetracted)
+        : [],
+    [filteredByErected, selectedRetracted]
+  );
 
-    // Wind Area - customizable
-    if (customizableKeys.includes("wind_area")) {
-      const sel = customSelections["wind_area"];
-      const match = priceGroups["wind_area"]?.find((p) => p.option_value === sel);
-      items.push({
-        label: "Wind Area (m²)",
-        value: match?.option_label || sel,
-        price: match ? Number(match.price) : 0,
-      });
-    }
+  const headLoadOptions = useMemo(
+    () => [...new Set(filteredByRetracted.map((v) => Number(v.head_load)))].sort((a, b) => a - b),
+    [filteredByRetracted]
+  );
 
-    // Wind Speed - fixed per model
-    items.push({
-      label: "Wind Speed (Op./Surv.)",
-      value: `${selectedVariant.wind_speed_operational}/${selectedVariant.wind_speed_survival} kmph`,
-      price: 0,
-    });
+  const filteredByHeadLoad = useMemo(
+    () =>
+      selectedHeadLoad !== null
+        ? filteredByRetracted.filter((v) => Number(v.head_load) === selectedHeadLoad)
+        : [],
+    [filteredByRetracted, selectedHeadLoad]
+  );
 
-    // Sway
-    items.push({
-      label: "Sway (°)",
-      value: selectedVariant.sway,
-      price: 0,
-    });
+  const windAreaOptions = useMemo(
+    () => [...new Set(filteredByHeadLoad.map((v) => Number(v.wind_area)))].sort((a, b) => a - b),
+    [filteredByHeadLoad]
+  );
 
-    // Weight of Mast
-    const weightMatch = priceGroups["weight"]?.find((p) => p.option_value === String(selectedVariant.weight));
-    items.push({
-      label: "Weight of Mast (Kg)",
-      value: `${selectedVariant.weight} Kg`,
-      price: weightMatch ? Number(weightMatch.price) : 0,
-    });
+  const filteredByWindArea = useMemo(
+    () =>
+      selectedWindArea !== null
+        ? filteredByHeadLoad.filter((v) => Number(v.wind_area) === selectedWindArea)
+        : [],
+    [filteredByHeadLoad, selectedWindArea]
+  );
 
-    // No. of Sections
-    const secMatch = priceGroups["sections"]?.find((p) => p.option_value === String(selectedVariant.sections));
-    items.push({
-      label: "No. of Sections",
-      value: `${selectedVariant.sections}`,
-      price: secMatch ? Number(secMatch.price) : 0,
-    });
+  // Check if tripod data exists
+  const hasTripodData = filteredByWindArea.some((v) => v.tripod_weight && Number(v.tripod_weight) > 0);
 
-    // Tube Dia
-    const tubeVal = selectedVariant.tube_dia?.replace(/\s/g, "");
-    const tubeMatch = priceGroups["tube_dia"]?.find((p) => p.option_value === tubeVal);
-    items.push({
-      label: "Tube Dia",
-      value: selectedVariant.tube_dia,
-      price: tubeMatch ? Number(tubeMatch.price) : 0,
-    });
+  // Matching variant (first match after all selections)
+  const matchingVariant = filteredByWindArea.length > 0 ? filteredByWindArea[0] : null;
 
-    // Ground Mount - No. of Guy Ropes
-    const guyVal = selectedVariant.guy_ropes?.replace(/\s/g, "");
-    const guyMatch = priceGroups["guy_ropes_ground"]?.find((p) => p.option_value === guyVal);
-    items.push({
-      label: "Ground Mount — Guy Ropes",
-      value: selectedVariant.guy_ropes,
-      price: guyMatch ? Number(guyMatch.price) : 0,
-    });
+  // Generated model number
+  const generatedModelNo = useMemo(() => {
+    const prefix = mastTypeInitials || "M";
+    const parts: string[] = [prefix];
+    if (selectedErected !== null) parts.push(String(selectedErected));
+    if (selectedHeadLoad !== null) parts.push(String(selectedHeadLoad));
+    if (selectedWindArea !== null) parts.push(String(selectedWindArea));
+    if (selectedGuyed) parts.push(selectedGuyed === "guyed" ? "G" : "UG");
+    return parts.join("-");
+  }, [mastTypeInitials, selectedErected, selectedHeadLoad, selectedWindArea, selectedGuyed]);
 
-    // Tripod Mount - No. of Guy Ropes
-    const tripodGuyVal = ((selectedVariant as any).tripod_guy_ropes || selectedVariant.guy_ropes)?.replace(/\s/g, "");
-    const tripodGuyMatch = priceGroups["guy_ropes_tripod"]?.find((p) => p.option_value === tripodGuyVal);
-    items.push({
-      label: "Tripod Mount — Guy Ropes",
-      value: (selectedVariant as any).tripod_guy_ropes || selectedVariant.guy_ropes,
-      price: tripodGuyMatch ? Number(tripodGuyMatch.price) : 0,
-    });
+  // Price from matching variant
+  const unitPrice = matchingVariant ? Number(matchingVariant.base_price) : 0;
+  const grandTotal = unitPrice * quantity;
 
-    // Tripod Weight
-    const tripodMatch = priceGroups["tripod_weight"]?.find((p) => p.option_value === String(selectedVariant.tripod_weight));
-    items.push({
-      label: "Tripod Weight (Kg)",
-      value: `${selectedVariant.tripod_weight} Kg`,
-      price: tripodMatch ? Number(tripodMatch.price) : 0,
-    });
+  const isConfigComplete =
+    selectedErected !== null &&
+    selectedRetracted !== null &&
+    selectedHeadLoad !== null &&
+    selectedWindArea !== null &&
+    selectedGuyed !== null;
 
-    return items;
-  }, [selectedVariant, customSelections, priceGroups, customizableKeys]);
-
-  const unitTotal = lineItems.reduce((sum, i) => sum + i.price, 0);
-  const grandTotal = unitTotal * quantity;
+  // Build summary for the quote
+  const configSummary = useMemo(() => {
+    if (!matchingVariant) return "";
+    const lines = [
+      `Technology: ${technologyName || "N/A"}`,
+      `Mast Type: ${mastTypeName || "N/A"}`,
+      `Duty Level: ${subCategory}`,
+      `Generated Model: ${generatedModelNo}`,
+      `Erected Height: ${selectedErected}m`,
+      `Retracted Height: ${selectedRetracted}m`,
+      `Head Load: ${selectedHeadLoad} Kg`,
+      `Wind Area: ${selectedWindArea} m²`,
+      `Wind Speed: ${matchingVariant.wind_speed_operational}/${matchingVariant.wind_speed_survival} kmph`,
+      `Sway: ${matchingVariant.sway}`,
+      `Weight: ${matchingVariant.weight} Kg`,
+      `Sections: ${matchingVariant.sections}`,
+      `Tube Dia: ${matchingVariant.tube_dia}`,
+      `Guy Ropes (Ground): ${matchingVariant.guy_ropes}`,
+      `Guy Ropes (Tripod): ${matchingVariant.tripod_guy_ropes || matchingVariant.guy_ropes}`,
+      `Tripod Weight: ${matchingVariant.tripod_weight} Kg`,
+      `Guyed/Unguyed: ${selectedGuyed}`,
+      `Unit Price: ₹${unitPrice.toLocaleString("en-IN")}`,
+      `Quantity: ${quantity}`,
+      `Total: ₹${grandTotal.toLocaleString("en-IN")}`,
+    ];
+    return lines.join("\n");
+  }, [matchingVariant, selectedErected, selectedRetracted, selectedHeadLoad, selectedWindArea, selectedGuyed, generatedModelNo, technologyName, mastTypeName, subCategory, unitPrice, quantity, grandTotal]);
 
   const handleSubmit = async () => {
     setSubmitting(true);
-    const configSummary = lineItems.map((i) => `${i.label}: ${i.value} (₹${i.price.toLocaleString("en-IN")})`).join("\n");
     const { error } = await supabase.from("quotes").insert({
       name: form.name,
       company: form.company,
@@ -193,7 +176,7 @@ const QuoteConfigurator = ({
       message: `${form.message}\n\n--- Configuration ---\n${configSummary}`,
       category,
       sub_category: subCategory,
-      product_model: selectedVariant?.model_no || "",
+      product_model: generatedModelNo,
       estimated_price: grandTotal,
     });
     setSubmitting(false);
@@ -210,6 +193,30 @@ const QuoteConfigurator = ({
 
   const isFormValid = form.name && form.email && form.company && form.phone && form.country;
 
+  // Reset downstream selections when upstream changes
+  const selectErected = (val: number) => {
+    setSelectedErected(val);
+    setSelectedRetracted(null);
+    setSelectedHeadLoad(null);
+    setSelectedWindArea(null);
+    setSelectedGuyed(null);
+  };
+  const selectRetracted = (val: number) => {
+    setSelectedRetracted(val);
+    setSelectedHeadLoad(null);
+    setSelectedWindArea(null);
+    setSelectedGuyed(null);
+  };
+  const selectHeadLoad = (val: number) => {
+    setSelectedHeadLoad(val);
+    setSelectedWindArea(null);
+    setSelectedGuyed(null);
+  };
+  const selectWindArea = (val: number) => {
+    setSelectedWindArea(val);
+    setSelectedGuyed(null);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg border border-border bg-card shadow-2xl">
@@ -217,7 +224,7 @@ const QuoteConfigurator = ({
         <div className="flex items-center justify-between border-b border-border p-4">
           <div>
             <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-foreground">
-              {step === "configure" ? "Configure Your Requirement" : step === "details" ? "Your Details" : "Thank You!"}
+              {step === "configure" ? "Configure Your Mast" : step === "details" ? "Your Details" : "Thank You!"}
             </h2>
             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground font-mono">
               <span className={step === "configure" ? "text-primary" : ""}>Configure</span>
@@ -235,98 +242,185 @@ const QuoteConfigurator = ({
         {/* Step 1: Configure */}
         {step === "configure" && (
           <div className="p-4 space-y-4">
+            {/* Erected Height */}
             <div>
-              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">Select Model (Height)</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {variants.map((v, idx) => (
+              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">
+                Erected Height (m) *
+              </label>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {erectedOptions.map((h) => (
                   <button
-                    key={v.id}
-                    onClick={() => setSelectedModelIdx(idx)}
+                    key={h}
+                    onClick={() => selectErected(h)}
                     className={`rounded border px-3 py-2 text-sm font-mono transition-colors ${
-                      idx === selectedModelIdx
+                      selectedErected === h
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border text-muted-foreground hover:border-primary/50"
                     }`}
                   >
-                    {v.model_no}
-                    <span className="block text-[10px]">
-                      {v.height_retracted}m / {v.height_erected}m
-                    </span>
+                    {h}m
                   </button>
                 ))}
               </div>
             </div>
 
-            {customizableKeys.map((key) => {
-              const options = priceGroups[key];
-              const label = options[0]?.characteristic_label || key;
-              return (
-                <div key={key}>
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">
-                    {label} <span className="text-primary">(Customizable)</span>
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {options.map((opt) => (
-                      <button
-                        key={opt.id}
-                        onClick={() =>
-                          setCustomSelections((prev) => ({ ...prev, [key]: opt.option_value }))
-                        }
-                        className={`rounded border px-3 py-2 text-sm font-mono transition-colors text-left ${
-                          customSelections[key] === opt.option_value
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border text-muted-foreground hover:border-primary/50"
-                        }`}
-                      >
-                        {opt.option_label}
-                      </button>
-                    ))}
-                  </div>
+            {/* Retracted Height */}
+            {selectedErected !== null && retractedOptions.length > 0 && (
+              <div>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">
+                  Retracted Height (m) *
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {retractedOptions.map((h) => (
+                    <button
+                      key={h}
+                      onClick={() => selectRetracted(h)}
+                      className={`rounded border px-3 py-2 text-sm font-mono transition-colors ${
+                        selectedRetracted === h
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {h}m
+                    </button>
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+            )}
 
-            <div>
-              <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">Quantity</label>
-              <input
-                type="number"
-                min={1}
-                value={quantity}
-                onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                className="w-24 rounded border border-border bg-input px-3 py-2 text-sm text-foreground font-mono focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
+            {/* Head Load */}
+            {selectedRetracted !== null && headLoadOptions.length > 0 && (
+              <div>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">
+                  Head Load (Kg) *
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {headLoadOptions.map((hl) => (
+                    <button
+                      key={hl}
+                      onClick={() => selectHeadLoad(hl)}
+                      className={`rounded border px-3 py-2 text-sm font-mono transition-colors ${
+                        selectedHeadLoad === hl
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {hl} Kg
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            {/* Configuration Summary Preview */}
-            {selectedVariant && (
+            {/* Wind Area */}
+            {selectedHeadLoad !== null && windAreaOptions.length > 0 && (
+              <div>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">
+                  Wind Area (m²) *
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {windAreaOptions.map((wa) => (
+                    <button
+                      key={wa}
+                      onClick={() => selectWindArea(wa)}
+                      className={`rounded border px-3 py-2 text-sm font-mono transition-colors ${
+                        selectedWindArea === wa
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {wa} m²
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Guyed / Unguyed */}
+            {selectedWindArea !== null && (
+              <div>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">
+                  Deployment Type *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["guyed", "unguyed"] as const).map((opt) => (
+                    <button
+                      key={opt}
+                      onClick={() => setSelectedGuyed(opt)}
+                      className={`rounded border px-3 py-2 text-sm font-mono capitalize transition-colors ${
+                        selectedGuyed === opt
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quantity */}
+            {isConfigComplete && (
+              <div>
+                <label className="text-xs uppercase tracking-wider text-muted-foreground mb-2 block">Quantity</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                  className="w-24 rounded border border-border bg-input px-3 py-2 text-sm text-foreground font-mono focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            )}
+
+            {/* Configuration Summary */}
+            {isConfigComplete && matchingVariant && (
               <div className="rounded border border-border bg-muted/30 p-3">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Selected Configuration</p>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs font-mono">
-                  <span className="text-muted-foreground">Height:</span>
-                  <span className="text-foreground">{selectedVariant.height_retracted}m / {selectedVariant.height_erected}m</span>
+                  <span className="text-muted-foreground">Generated Model:</span>
+                  <span className="text-primary font-bold">{generatedModelNo}</span>
+                  <span className="text-muted-foreground">Erected Height:</span>
+                  <span className="text-foreground">{selectedErected}m</span>
+                  <span className="text-muted-foreground">Retracted Height:</span>
+                  <span className="text-foreground">{selectedRetracted}m</span>
+                  <span className="text-muted-foreground">Head Load:</span>
+                  <span className="text-foreground">{selectedHeadLoad} Kg</span>
+                  <span className="text-muted-foreground">Wind Area:</span>
+                  <span className="text-foreground">{selectedWindArea} m²</span>
+                  <span className="text-muted-foreground">Deployment:</span>
+                  <span className="text-foreground capitalize">{selectedGuyed}</span>
                   <span className="text-muted-foreground">Wind Speed:</span>
-                  <span className="text-foreground">{selectedVariant.wind_speed_operational}/{selectedVariant.wind_speed_survival} kmph</span>
+                  <span className="text-foreground">
+                    {matchingVariant.wind_speed_operational}/{matchingVariant.wind_speed_survival} kmph
+                  </span>
                   <span className="text-muted-foreground">Sway:</span>
-                  <span className="text-foreground">{selectedVariant.sway}</span>
+                  <span className="text-foreground">{matchingVariant.sway}</span>
                   <span className="text-muted-foreground">Weight:</span>
-                  <span className="text-foreground">{selectedVariant.weight} Kg</span>
+                  <span className="text-foreground">{matchingVariant.weight} Kg</span>
                   <span className="text-muted-foreground">Sections:</span>
-                  <span className="text-foreground">{selectedVariant.sections}</span>
+                  <span className="text-foreground">{matchingVariant.sections}</span>
                   <span className="text-muted-foreground">Tube Dia:</span>
-                  <span className="text-foreground">{selectedVariant.tube_dia}</span>
-                  <span className="text-muted-foreground">Ground Guy Ropes:</span>
-                  <span className="text-foreground">{selectedVariant.guy_ropes}</span>
-                  <span className="text-muted-foreground">Tripod Guy Ropes:</span>
-                  <span className="text-foreground">{(selectedVariant as any).tripod_guy_ropes || selectedVariant.guy_ropes}</span>
-                  <span className="text-muted-foreground">Tripod Weight:</span>
-                  <span className="text-foreground">{selectedVariant.tripod_weight} Kg</span>
+                  <span className="text-foreground">{matchingVariant.tube_dia}</span>
+                  <span className="text-muted-foreground">Guy Ropes (Ground):</span>
+                  <span className="text-foreground">{matchingVariant.guy_ropes}</span>
+                  {hasTripodData && (
+                    <>
+                      <span className="text-muted-foreground">Guy Ropes (Tripod):</span>
+                      <span className="text-foreground">{matchingVariant.tripod_guy_ropes || matchingVariant.guy_ropes}</span>
+                      <span className="text-muted-foreground">Tripod Weight:</span>
+                      <span className="text-foreground">{matchingVariant.tripod_weight} Kg</span>
+                    </>
+                  )}
                 </div>
               </div>
             )}
 
             <button
               onClick={() => setStep("details")}
-              className="w-full rounded bg-primary py-2.5 text-sm font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/80 flex items-center justify-center gap-2"
+              disabled={!isConfigComplete}
+              className="w-full rounded bg-primary py-2.5 text-sm font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/80 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               Next: Your Details <ChevronRight className="h-4 w-4" />
             </button>
@@ -382,7 +476,7 @@ const QuoteConfigurator = ({
         )}
 
         {/* Step 3: Thank You + Estimated Quote */}
-        {step === "thankyou" && (
+        {step === "thankyou" && matchingVariant && (
           <div className="p-4 space-y-4">
             <div className="rounded border border-primary/30 bg-primary/5 p-4 text-center">
               <p className="text-lg font-bold text-foreground">Thank you for your interest, {form.name}!</p>
@@ -390,8 +484,8 @@ const QuoteConfigurator = ({
             </div>
 
             <div className="rounded border border-border bg-muted/30 p-3">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Selected Model</p>
-              <p className="font-mono text-lg font-bold text-primary">{selectedVariant?.model_no}</p>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">Generated Model Number</p>
+              <p className="font-mono text-lg font-bold text-primary">{generatedModelNo}</p>
             </div>
 
             <div className="rounded border border-border overflow-hidden">
@@ -400,35 +494,48 @@ const QuoteConfigurator = ({
                   <tr className="bg-secondary">
                     <th className="text-left px-3 py-2 text-xs uppercase tracking-wider text-secondary-foreground font-heading">Specification</th>
                     <th className="text-left px-3 py-2 text-xs uppercase tracking-wider text-secondary-foreground font-heading">Value</th>
-                    <th className="text-right px-3 py-2 text-xs uppercase tracking-wider text-secondary-foreground font-heading">Price (₹)</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {lineItems.map((item, idx) => (
+                  {[
+                    { label: "Technology", value: technologyName || "N/A" },
+                    { label: "Mast Type", value: mastTypeName || "N/A" },
+                    { label: "Duty Level", value: subCategory },
+                    { label: "Erected Height", value: `${selectedErected}m` },
+                    { label: "Retracted Height", value: `${selectedRetracted}m` },
+                    { label: "Head Load", value: `${selectedHeadLoad} Kg` },
+                    { label: "Wind Area", value: `${selectedWindArea} m²` },
+                    { label: "Wind Speed (Op./Surv.)", value: `${matchingVariant.wind_speed_operational}/${matchingVariant.wind_speed_survival} kmph` },
+                    { label: "Sway", value: matchingVariant.sway },
+                    { label: "Weight of Mast", value: `${matchingVariant.weight} Kg` },
+                    { label: "No. of Sections", value: `${matchingVariant.sections}` },
+                    { label: "Tube Dia", value: matchingVariant.tube_dia },
+                    { label: "Guy Ropes (Ground)", value: matchingVariant.guy_ropes },
+                    ...(hasTripodData
+                      ? [
+                          { label: "Guy Ropes (Tripod)", value: matchingVariant.tripod_guy_ropes || matchingVariant.guy_ropes },
+                          { label: "Tripod Weight", value: `${matchingVariant.tripod_weight} Kg` },
+                        ]
+                      : []),
+                    { label: "Deployment", value: selectedGuyed || "" },
+                  ].map((item, idx) => (
                     <tr key={idx} className="border-b border-border last:border-0">
-                      <td className="px-3 py-2 text-foreground">{item.label}</td>
-                      <td className="px-3 py-2 font-mono text-muted-foreground">{item.value}</td>
-                      <td className="px-3 py-2 font-mono text-primary text-right">
-                        {item.price > 0 ? `₹${item.price.toLocaleString("en-IN")}` : "—"}
-                      </td>
+                      <td className="px-3 py-2 text-muted-foreground">{item.label}</td>
+                      <td className="px-3 py-2 font-mono text-foreground">{item.value}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr className="border-t-2 border-primary/30 bg-primary/5">
-                    <td className="px-3 py-2 font-bold text-foreground" colSpan={2}>
-                      Unit Total
-                    </td>
-                    <td className="px-3 py-2 font-mono font-bold text-primary text-right">
-                      ₹{unitTotal.toLocaleString("en-IN")}
+                    <td className="px-3 py-2 font-bold text-foreground">Estimated Unit Price</td>
+                    <td className="px-3 py-2 font-mono font-bold text-primary">
+                      ₹{unitPrice.toLocaleString("en-IN")}
                     </td>
                   </tr>
                   {quantity > 1 && (
                     <tr className="bg-primary/5">
-                      <td className="px-3 py-2 font-bold text-foreground" colSpan={2}>
-                        × {quantity} units
-                      </td>
-                      <td className="px-3 py-2 font-mono font-bold text-primary text-right text-lg">
+                      <td className="px-3 py-2 font-bold text-foreground">× {quantity} units — Total</td>
+                      <td className="px-3 py-2 font-mono font-bold text-primary text-lg">
                         ₹{grandTotal.toLocaleString("en-IN")}
                       </td>
                     </tr>
