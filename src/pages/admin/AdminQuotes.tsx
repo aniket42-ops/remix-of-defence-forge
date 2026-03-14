@@ -5,6 +5,40 @@ import { FileText, Loader2, Trash2, CheckCircle, ChevronDown, ChevronUp } from "
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
+type ConfigRow = {
+  label: string;
+  value: string;
+  price?: string;
+};
+
+const parseQuoteMessage = (message: string) => {
+  const [customerMessagePart = "", configPart = ""] = message.split("--- Configuration ---");
+
+  const configRows: ConfigRow[] = configPart
+    .trim()
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const priced = line.match(/^(.+?):\s*(.+?)\s*\((₹[\d,]+)\)$/);
+      if (priced) {
+        return { label: priced[1].trim(), value: priced[2].trim(), price: priced[3].trim() };
+      }
+
+      const basic = line.match(/^(.+?):\s*(.+)$/);
+      if (basic) {
+        return { label: basic[1].trim(), value: basic[2].trim() };
+      }
+
+      return { label: "Detail", value: line };
+    });
+
+  return {
+    customerMessage: customerMessagePart.trim(),
+    configRows,
+  };
+};
+
 const AdminQuotes = () => {
   const { data: quotes, isLoading } = useQuotes();
   const queryClient = useQueryClient();
