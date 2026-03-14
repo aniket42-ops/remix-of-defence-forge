@@ -210,7 +210,7 @@ const AdminQuotes = () => {
                     </div>
 
                     {/* Configuration breakdown */}
-                    {configLines.length > 0 && (
+                    {configRows.length > 0 && (
                       <div>
                         <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2">Configuration & Pricing</h4>
                         <div className="rounded border border-border overflow-hidden">
@@ -219,28 +219,28 @@ const AdminQuotes = () => {
                               <tr className="bg-secondary">
                                 <th className="text-left px-3 py-2 text-xs uppercase tracking-wider text-secondary-foreground">Specification</th>
                                 <th className="text-left px-3 py-2 text-xs uppercase tracking-wider text-secondary-foreground">Value</th>
-                                <th className="text-right px-3 py-2 text-xs uppercase tracking-wider text-secondary-foreground">Price</th>
+                                {hasPriceBreakdown && (
+                                  <th className="text-right px-3 py-2 text-xs uppercase tracking-wider text-secondary-foreground">Price</th>
+                                )}
                               </tr>
                             </thead>
                             <tbody>
-                              {configLines.map((line, idx) => {
-                                const match = line.match(/^(.+?):\s*(.+?)\s*\((₹[\d,]+)\)$/);
-                                if (!match) return null;
-                                return (
-                                  <tr key={idx} className="border-b border-border last:border-0">
-                                    <td className="px-3 py-1.5 text-foreground">{match[1]}</td>
-                                    <td className="px-3 py-1.5 font-mono text-muted-foreground">{match[2]}</td>
-                                    <td className="px-3 py-1.5 font-mono text-primary text-right">{match[3]}</td>
-                                  </tr>
-                                );
-                              })}
+                              {configRows.map((row, idx) => (
+                                <tr key={`${row.label}-${idx}`} className="border-b border-border last:border-0">
+                                  <td className="px-3 py-1.5 text-foreground">{row.label}</td>
+                                  <td className="px-3 py-1.5 font-mono text-muted-foreground">{row.value}</td>
+                                  {hasPriceBreakdown && (
+                                    <td className="px-3 py-1.5 font-mono text-primary text-right">{row.price || "—"}</td>
+                                  )}
+                                </tr>
+                              ))}
                             </tbody>
                             <tfoot>
                               <tr className="border-t-2 border-primary/30 bg-primary/5">
-                                <td className="px-3 py-2 font-bold text-foreground" colSpan={2}>
+                                <td className="px-3 py-2 font-bold text-foreground" colSpan={hasPriceBreakdown ? 2 : 1}>
                                   Total {q.quantity > 1 ? `(× ${q.quantity} units)` : ""}
                                 </td>
-                                <td className="px-3 py-2 font-mono font-bold text-primary text-right">
+                                <td className={`px-3 py-2 font-mono font-bold text-primary ${hasPriceBreakdown ? "text-right" : ""}`}>
                                   ₹{Number(q.estimated_price).toLocaleString("en-IN")}
                                 </td>
                               </tr>
@@ -251,11 +251,11 @@ const AdminQuotes = () => {
                     )}
 
                     {/* Additional message */}
-                    {q.message && !q.message.startsWith("\n\n---") && (
+                    {customerMessage && (
                       <div>
                         <h4 className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2">Customer Message</h4>
                         <p className="text-sm text-foreground bg-muted/30 rounded border border-border p-3 whitespace-pre-wrap">
-                          {q.message.split("--- Configuration ---")[0].trim() || "—"}
+                          {customerMessage}
                         </p>
                       </div>
                     )}
