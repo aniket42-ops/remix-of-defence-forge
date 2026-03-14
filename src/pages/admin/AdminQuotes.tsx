@@ -99,9 +99,8 @@ const AdminQuotes = () => {
         <div className="space-y-3">
           {quotes.map((q) => {
             const isExpanded = expandedId === q.id;
-            // Parse configuration from message
-            const configMatch = q.message?.match(/--- Configuration ---\n([\s\S]*)/);
-            const configLines = configMatch ? configMatch[1].trim().split("\n") : [];
+            const { customerMessage, configRows } = parseQuoteMessage(q.message || "");
+            const hasPriceBreakdown = configRows.some((row) => row.price);
 
             return (
               <div key={q.id} className="rounded-lg border border-border bg-card overflow-hidden">
