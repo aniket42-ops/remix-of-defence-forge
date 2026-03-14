@@ -2,18 +2,13 @@ import { useParams, Link } from "react-router-dom";
 import { useCategoryBySlug, useSubCategories } from "@/hooks/use-products";
 import { isMultiStepCategory, TECHNOLOGIES } from "@/data/catalogue";
 import SubCategoryCard from "@/components/SubCategoryCard";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, Loader2, Truck, Target, Building, Car } from "lucide-react";
 
-import techVehicleMounted from "@/assets/tech-vehicle-mounted.jpg";
-import techGroundDeployment from "@/assets/tech-ground-deployment.jpg";
-import techBuildingRoof from "@/assets/tech-building-roof.jpg";
-import techVehicleRoof from "@/assets/tech-vehicle-roof.jpg";
-
-const techImages: Record<string, string> = {
-  "vehicle-mounted": techVehicleMounted,
-  "ground-deployment": techGroundDeployment,
-  "building-roof-mounted": techBuildingRoof,
-  "vehicle-roof-mounted": techVehicleRoof,
+const techIcons: Record<string, React.ReactNode> = {
+  "vehicle-mounted": <Truck className="h-8 w-8" />,
+  "ground-deployment": <Target className="h-8 w-8" />,
+  "building-roof-mounted": <Building className="h-8 w-8" />,
+  "vehicle-roof-mounted": <Car className="h-8 w-8" />,
 };
 
 const CategoryPage = () => {
@@ -62,23 +57,15 @@ const CategoryPage = () => {
             <Link
               key={tech.slug}
               to={`/category/${cat.slug}/t/${tech.slug}`}
-              className="group rounded-lg border border-border bg-card overflow-hidden transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
+              className="group rounded-lg border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
             >
-              <div className="aspect-[4/3] overflow-hidden">
-                <img
-                  src={techImages[tech.slug]}
-                  alt={tech.title}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-              </div>
-              <div className="p-5">
-                <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
-                  {tech.title}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{tech.description}</p>
-                <div className="mt-3 flex items-center gap-1 text-xs font-mono text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                  Select <ChevronRight className="h-3 w-3" />
-                </div>
+              <div className="mb-4 text-primary">{techIcons[tech.slug]}</div>
+              <h3 className="font-heading text-lg font-bold uppercase tracking-wider text-foreground group-hover:text-primary transition-colors">
+                {tech.title}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2">{tech.description}</p>
+              <div className="mt-4 flex items-center gap-1 text-xs font-mono text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                Select <ChevronRight className="h-3 w-3" />
               </div>
             </Link>
           ))}
