@@ -53,6 +53,10 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
         "surface-elevated": "hsl(var(--surface-elevated))",
+        navbar: {
+          DEFAULT: "hsl(var(--navbar))",
+          foreground: "hsl(var(--navbar-foreground))",
+        },
         "tech-green": {
           DEFAULT: "hsl(var(--tech-green))",
           foreground: "hsl(var(--tech-green-foreground))",
