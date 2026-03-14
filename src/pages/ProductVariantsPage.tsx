@@ -72,7 +72,7 @@ const ProductVariantsPage = () => {
       </div>
 
       {/* Show 3D viewer for PTM light duty masts */}
-      {subSlug === "light-duty" && mastType === "pneumatic-masts" && (
+      {subSlug === "light-duty" && isMultiStepFlow && (
         <div className="mb-8">
           <Mast3DViewer />
         </div>
