@@ -10,10 +10,24 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        toast.error(error.message);
+        setLoading(false);
+        return;
+      }
+      toast.success("Account created! You can now sign in.");
+      setIsSignUp(false);
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -46,7 +60,7 @@ const LoginPage = () => {
           <div className="flex items-center justify-center gap-2 mb-6">
             <Lock className="h-6 w-6 text-primary" />
             <h1 className="font-heading text-xl font-bold uppercase tracking-wider text-foreground">
-              Admin Login
+              {isSignUp ? "Create Account" : "Admin Login"}
             </h1>
           </div>
 
@@ -97,11 +111,18 @@ const LoginPage = () => {
               disabled={loading}
               className="w-full rounded bg-primary py-2.5 text-sm font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? (isSignUp ? "Creating..." : "Signing in...") : (isSignUp ? "Create Account" : "Sign In")}
             </button>
           </form>
 
-          <p className="mt-4 text-center text-xs text-muted-foreground">
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="mt-4 w-full text-center text-xs text-primary hover:underline"
+          >
+            {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
+          </button>
+
+          <p className="mt-2 text-center text-xs text-muted-foreground">
             Access restricted to authorized personnel only.
           </p>
         </div>
