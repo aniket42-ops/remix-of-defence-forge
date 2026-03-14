@@ -16,6 +16,19 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
 
+    if (isSignUp) {
+      const { error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        toast.error(error.message);
+        setLoading(false);
+        return;
+      }
+      toast.success("Account created! You can now sign in.");
+      setIsSignUp(false);
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
