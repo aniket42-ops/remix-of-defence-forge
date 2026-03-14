@@ -1,16 +1,23 @@
-import { Link, useLocation } from "react-router-dom";
-import { Shield, Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Shield, Menu, X, LogIn, LogOut, User } from "lucide-react";
 import { useState } from "react";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, role, hasAccess, signOut, loading } = useAuthContext();
 
   const links = [
     { to: "/", label: "Home" },
     { to: "/category/telescopic-masts", label: "Products" },
-    { to: "/admin", label: "Admin" },
   ];
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-navbar shadow-md">
@@ -42,6 +49,45 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+
+          {/* Admin link - only for users with roles */}
+          {hasAccess && (
+            <Link
+              to="/admin"
+              className={`px-5 py-2 text-sm font-medium uppercase tracking-wider transition-colors ${
+                location.pathname.startsWith("/admin")
+                  ? "text-white bg-white/15"
+                  : "text-navbar-foreground/80 hover:text-white hover:bg-white/10"
+              }`}
+            >
+              Admin
+            </Link>
+          )}
+
+          {/* Auth button */}
+          {!loading && (
+            user ? (
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 px-5 py-2 text-sm font-medium uppercase tracking-wider text-navbar-foreground/80 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                className={`flex items-center gap-1.5 px-5 py-2 text-sm font-medium uppercase tracking-wider transition-colors ${
+                  location.pathname === "/login"
+                    ? "text-white bg-white/15"
+                    : "text-navbar-foreground/80 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <LogIn className="h-4 w-4" />
+                Login
+              </Link>
+            )
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -70,6 +116,37 @@ const Navbar = () => {
               {link.label}
             </Link>
           ))}
+
+          {hasAccess && (
+            <Link
+              to="/admin"
+              onClick={() => setMobileOpen(false)}
+              className="block px-3 py-2 rounded text-sm font-medium uppercase tracking-wider text-navbar-foreground/80 hover:text-white"
+            >
+              Admin
+            </Link>
+          )}
+
+          {!loading && (
+            user ? (
+              <button
+                onClick={() => { handleLogout(); setMobileOpen(false); }}
+                className="flex items-center gap-1.5 w-full px-3 py-2 rounded text-sm font-medium uppercase tracking-wider text-navbar-foreground/80 hover:text-white"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
+            ) : (
+              <Link
+                to="/login"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded text-sm font-medium uppercase tracking-wider text-navbar-foreground/80 hover:text-white"
+              >
+                <LogIn className="h-4 w-4" />
+                Login
+              </Link>
+            )
+          )}
         </div>
       )}
     </nav>

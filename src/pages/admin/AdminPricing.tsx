@@ -1,27 +1,24 @@
 import { useAllCategoriesWithData } from "@/hooks/use-products";
 import { supabase } from "@/integrations/supabase/client";
-import { DollarSign, Loader2 } from "lucide-react";
+import { DollarSign, Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const AdminPricing = () => {
   const { data: categories, isLoading } = useAllCategoriesWithData();
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState("");
+  const { canEdit, isSales } = useAuthContext();
 
   const handleSave = async (variantId: string) => {
+    if (!canEdit) { toast.error("View-only access"); return; }
     const price = parseFloat(editPrice);
-    if (isNaN(price) || price < 0) {
-      toast.error("Invalid price");
-      return;
-    }
+    if (isNaN(price) || price < 0) { toast.error("Invalid price"); return; }
     const { error } = await supabase.from("product_variants").update({ base_price: price }).eq("id", variantId);
-    if (error) {
-      toast.error("Failed to update price");
-      return;
-    }
+    if (error) { toast.error("Failed to update price"); return; }
     toast.success("Price updated");
     setEditingId(null);
     queryClient.invalidateQueries({ queryKey: ["admin_all_products"] });
@@ -34,7 +31,14 @@ const AdminPricing = () => {
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold uppercase tracking-wider text-foreground mb-6">Pricing Configuration</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <h1 className="font-heading text-2xl font-bold uppercase tracking-wider text-foreground">Pricing Configuration</h1>
+        {isSales && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+            <Lock className="h-3 w-3" /> View Only
+          </span>
+        )}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {categories?.map((cat) => (
           <div key={cat.id} className="rounded-lg border border-border bg-card p-5">
@@ -49,27 +53,18 @@ const AdminPricing = () => {
                   <div key={v.id} className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
                     <span className="font-mono text-sm text-foreground">{v.model_no}</span>
                     <div className="flex items-center gap-2">
-                      {editingId === v.id ? (
+                      {canEdit && editingId === v.id ? (
                         <>
-                          <input
-                            type="number"
-                            value={editPrice}
-                            onChange={(e) => setEditPrice(e.target.value)}
-                            className="w-24 rounded border border-border bg-input px-2 py-1 text-sm text-foreground font-mono"
-                            autoFocus
-                          />
+                          <input type="number" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} className="w-24 rounded border border-border bg-input px-2 py-1 text-sm text-foreground font-mono" autoFocus />
                           <button onClick={() => handleSave(v.id)} className="text-xs text-tech-green hover:underline">Save</button>
                           <button onClick={() => setEditingId(null)} className="text-xs text-muted-foreground hover:underline">Cancel</button>
                         </>
                       ) : (
                         <>
                           <span className="font-mono text-sm text-primary">₹ {Number(v.base_price).toLocaleString("en-IN")}</span>
-                          <button
-                            onClick={() => { setEditingId(v.id); setEditPrice(String(v.base_price)); }}
-                            className="text-xs text-muted-foreground hover:text-primary"
-                          >
-                            Edit
-                          </button>
+                          {canEdit && (
+                            <button onClick={() => { setEditingId(v.id); setEditPrice(String(v.base_price)); }} className="text-xs text-muted-foreground hover:text-primary">Edit</button>
+                          )}
                         </>
                       )}
                     </div>
