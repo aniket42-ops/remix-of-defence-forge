@@ -4,6 +4,7 @@ import { useCategoryBySlug, useSubCategoryBySlug, useProductVariants, useCharact
 import { getTechnologyBySlug, getMastTypeBySlug } from "@/data/catalogue";
 import ProductTable from "@/components/ProductTable";
 import QuoteConfigurator from "@/components/QuoteConfigurator";
+import Mast3DViewer from "@/components/Mast3DViewer";
 import { ChevronRight, Loader2 } from "lucide-react";
 
 const ProductVariantsPage = () => {
@@ -69,6 +70,13 @@ const ProductVariantsPage = () => {
         </h1>
         <p className="text-sm text-muted-foreground mt-2">{subCat.description}</p>
       </div>
+
+      {/* Show 3D viewer for PTM light duty masts */}
+      {subSlug === "light-duty" && mastType === "pneumatic-masts" && (
+        <div className="mb-8">
+          <Mast3DViewer />
+        </div>
+      )}
 
       <ProductTable
         variants={variants || []}

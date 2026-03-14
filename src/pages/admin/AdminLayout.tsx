@@ -1,5 +1,6 @@
-import { Outlet, Link, useLocation } from "react-router-dom";
-import { BarChart3, Package, DollarSign, FileText, Settings, Shield } from "lucide-react";
+import { Outlet, Link, useLocation, Navigate } from "react-router-dom";
+import { BarChart3, Package, DollarSign, FileText, Settings, User, Loader2 } from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const adminLinks = [
   { to: "/admin", label: "Dashboard", icon: BarChart3 },
@@ -10,6 +11,25 @@ const adminLinks = [
 
 const AdminLayout = () => {
   const location = useLocation();
+  const { user, role, hasAccess, loading } = useAuthContext();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user || !hasAccess) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const roleBadgeColor = {
+    admin: "bg-primary/20 text-primary",
+    subadmin: "bg-tech-green/20 text-tech-green",
+    sales: "bg-accent/20 text-accent",
+  };
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
@@ -22,6 +42,15 @@ const AdminLayout = () => {
               Admin Panel
             </span>
           </div>
+          <div className="mt-2 flex items-center gap-2">
+            <User className="h-3 w-3 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground truncate">{user.email}</span>
+          </div>
+          {role && (
+            <span className={`mt-1 inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${roleBadgeColor[role]}`}>
+              {role}
+            </span>
+          )}
         </div>
         <nav className="p-2 space-y-0.5">
           {adminLinks.map((link) => (
