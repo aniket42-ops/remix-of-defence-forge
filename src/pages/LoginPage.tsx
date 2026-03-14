@@ -60,7 +60,7 @@ const LoginPage = () => {
           <div className="flex items-center justify-center gap-2 mb-6">
             <Lock className="h-6 w-6 text-primary" />
             <h1 className="font-heading text-xl font-bold uppercase tracking-wider text-foreground">
-              Admin Login
+              {isSignUp ? "Create Account" : "Admin Login"}
             </h1>
           </div>
 
