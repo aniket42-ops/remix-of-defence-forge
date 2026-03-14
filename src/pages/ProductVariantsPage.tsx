@@ -4,6 +4,7 @@ import { useCategoryBySlug, useSubCategoryBySlug, useProductVariants, useCharact
 import { getTechnologyBySlug, getMastTypeBySlug } from "@/data/catalogue";
 import ProductTable from "@/components/ProductTable";
 import QuoteConfigurator from "@/components/QuoteConfigurator";
+import Mast3DViewer from "@/components/Mast3DViewer";
 import { ChevronRight, Loader2 } from "lucide-react";
 
 const ProductVariantsPage = () => {
