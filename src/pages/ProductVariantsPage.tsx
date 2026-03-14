@@ -71,6 +71,13 @@ const ProductVariantsPage = () => {
         <p className="text-sm text-muted-foreground mt-2">{subCat.description}</p>
       </div>
 
+      {/* Show 3D viewer for PTM light duty masts */}
+      {subSlug === "light-duty" && mastType === "pneumatic-masts" && (
+        <div className="mb-8">
+          <Mast3DViewer />
+        </div>
+      )}
+
       <ProductTable
         variants={variants || []}
         onGetQuote={() => setShowConfigurator(true)}
