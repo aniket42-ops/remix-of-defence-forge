@@ -111,11 +111,18 @@ const LoginPage = () => {
               disabled={loading}
               className="w-full rounded bg-primary py-2.5 text-sm font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? (isSignUp ? "Creating..." : "Signing in...") : (isSignUp ? "Create Account" : "Sign In")}
             </button>
           </form>
 
-          <p className="mt-4 text-center text-xs text-muted-foreground">
+          <button
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="mt-4 w-full text-center text-xs text-primary hover:underline"
+          >
+            {isSignUp ? "Already have an account? Sign In" : "Need an account? Sign Up"}
+          </button>
+
+          <p className="mt-2 text-center text-xs text-muted-foreground">
             Access restricted to authorized personnel only.
           </p>
         </div>
