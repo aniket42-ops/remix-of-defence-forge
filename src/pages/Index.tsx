@@ -4,7 +4,7 @@ import { Shield, ChevronDown, Loader2 } from "lucide-react";
 import heroBanner from "@/assets/hero-banner.jpg";
 
 const Index = () => {
-  const { data: categories, isLoading } = useCategories();
+  const { data: categories, isLoading, error } = useCategories();
 
   return (
     <div>
@@ -48,6 +48,11 @@ const Index = () => {
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-12 text-destructive">
+            <p className="font-medium">Failed to load categories</p>
+            <p className="text-sm text-muted-foreground mt-1">{error.message}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

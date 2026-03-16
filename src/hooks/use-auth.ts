@@ -11,26 +11,20 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Restore session first
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        try {
-          const { data } = await supabase.rpc("get_user_role", {
-            _user_id: session.user.id,
-          });
-          setRole((data as AppRole) || null);
-        } catch {
-          setRole(null);
-        }
-      }
-      setLoading(false);
-    });
+    let mounted = true;
 
-    // Listen for subsequent auth changes
+    // Timeout fallback: if auth doesn't resolve in 5s, stop loading
+    const timeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn("Auth loading timeout - forcing ready state");
+        setLoading(false);
+      }
+    }, 5000);
+
+    // Set up auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -38,18 +32,34 @@ export function useAuth() {
             const { data } = await supabase.rpc("get_user_role", {
               _user_id: session.user.id,
             });
-            setRole((data as AppRole) || null);
+            if (mounted) setRole((data as AppRole) || null);
           } catch {
-            setRole(null);
+            if (mounted) setRole(null);
           }
         } else {
           setRole(null);
         }
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Also call getSession as backup
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (!session?.user) {
+        setLoading(false);
+      }
+    }).catch(() => {
+      if (mounted) setLoading(false);
+    });
+
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
