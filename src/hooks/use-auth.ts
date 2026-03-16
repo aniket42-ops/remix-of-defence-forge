@@ -11,24 +11,7 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Restore session first
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        try {
-          const { data } = await supabase.rpc("get_user_role", {
-            _user_id: session.user.id,
-          });
-          setRole((data as AppRole) || null);
-        } catch {
-          setRole(null);
-        }
-      }
-      setLoading(false);
-    });
-
-    // Listen for subsequent auth changes
+    // Set up auth listener FIRST (fires with initial session too)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
@@ -48,6 +31,17 @@ export function useAuth() {
         setLoading(false);
       }
     );
+
+    // Also call getSession to handle edge cases, with catch to prevent hangs
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (!session?.user) {
+        setLoading(false);
+      }
+    }).catch(() => {
+      setLoading(false);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
