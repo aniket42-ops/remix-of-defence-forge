@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { Card, CardContent } from "@/components/ui/card";
 
 import telescopicMastsImg from "@/assets/telescopic-masts.jpg";
 import tripodsImg from "@/assets/tripods.jpg";
@@ -62,56 +63,88 @@ const AdminProducts = () => {
       </div>
 
       {categories?.map((cat) => (
-        <div key={cat.id} className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
+        <div key={cat.id} className="mb-10">
+          {/* Category header with larger image */}
+          <div className="flex items-center gap-4 mb-5">
             {categoryImages[cat.slug] && (
               <img
                 src={categoryImages[cat.slug]}
                 alt={cat.title}
-                className="h-10 w-10 rounded object-cover border border-border"
+                className="h-16 w-24 rounded-lg object-cover border border-border shadow-sm"
               />
             )}
-            <h2 className="font-heading text-lg font-bold uppercase tracking-wider text-primary">{cat.title}</h2>
+            <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-primary">{cat.title}</h2>
           </div>
+
           {cat.subCategories.map((sub) => (
-            <div key={sub.id} className="mb-4">
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">{sub.title}</h3>
-              <div className="overflow-x-auto rounded-lg border border-border">
-                <table className="spec-table w-full text-left">
-                  <thead>
-                    <tr>
-                      <th>Model No</th>
-                      <th>Height (m)</th>
-                      <th>Head Load (kg)</th>
-                      <th>Weight (kg)</th>
-                      <th>Base Price (₹)</th>
-                      {canEdit && <th>Actions</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sub.variants.map((v) => (
-                      <tr key={v.id}>
-                        <td className="font-semibold text-primary">{v.model_no}</td>
-                        <td>{v.height_erected}</td>
-                        <td>{v.head_load}</td>
-                        <td>{v.weight}</td>
-                        <td>₹ {Number(v.base_price).toLocaleString("en-IN")}</td>
+            <div key={sub.id} className="mb-6">
+              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3 ml-1">{sub.title}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {sub.variants.map((v) => (
+                  <Card key={v.id} className="group relative overflow-hidden border-border hover:border-primary/40 transition-all hover:shadow-lg">
+                    {/* Card image area */}
+                    {categoryImages[cat.slug] && (
+                      <div className="h-36 overflow-hidden bg-muted">
+                        <img
+                          src={categoryImages[cat.slug]}
+                          alt={v.model_no}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-90"
+                        />
+                      </div>
+                    )}
+                    <CardContent className="p-4">
+                      {/* Model number */}
+                      <h4 className="font-heading text-base font-bold text-primary uppercase tracking-wider mb-2">
+                        {v.model_no}
+                      </h4>
+
+                      {/* Specs grid */}
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-sm mb-3">
+                        <div>
+                          <span className="text-muted-foreground text-xs">Height</span>
+                          <p className="font-semibold text-foreground">{v.height_erected} m</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Head Load</span>
+                          <p className="font-semibold text-foreground">{v.head_load} kg</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Weight</span>
+                          <p className="font-semibold text-foreground">{v.weight} kg</p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Sections</span>
+                          <p className="font-semibold text-foreground">{v.sections}</p>
+                        </div>
+                      </div>
+
+                      {/* Price */}
+                      <div className="border-t border-border pt-2 flex items-center justify-between">
+                        <span className="font-mono text-sm font-bold text-accent">
+                          ₹ {Number(v.base_price).toLocaleString("en-IN")}
+                        </span>
+
                         {canEdit && (
-                          <td>
-                            <div className="flex gap-2">
-                              <button onClick={() => toast.info("Edit form coming soon")} className="rounded p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10">
-                                <Pencil className="h-4 w-4" />
-                              </button>
-                              <button onClick={() => handleDelete(v.id, v.model_no)} disabled={deleting === v.id} className="rounded p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-50">
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </td>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => toast.info("Edit form coming soon")}
+                              className="rounded p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(v.id, v.model_no)}
+                              disabled={deleting === v.id}
+                              className="rounded p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 disabled:opacity-50 transition-colors"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
                         )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             </div>
           ))}
