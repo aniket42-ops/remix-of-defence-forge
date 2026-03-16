@@ -55,7 +55,7 @@ const Mast3DViewer = () => {
         <img
           src={mastImage}
           alt="PTM Light Duty Mast"
-          className="h-36 w-auto object-contain pointer-events-none opacity-80"
+          className="h-52 w-auto object-contain pointer-events-none opacity-80"
           draggable={false}
           style={{
             filter: `drop-shadow(${-rotateY * 0.2}px ${3 + rotateX * 0.15}px 8px hsl(var(--primary) / 0.12))`,
