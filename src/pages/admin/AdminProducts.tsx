@@ -6,6 +6,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 
+import telescopicMastsImg from "@/assets/telescopic-masts.jpg";
+import tripodsImg from "@/assets/tripods.jpg";
+import pedestalsImg from "@/assets/pedestals.jpg";
+import junctionBoxImg from "@/assets/junction-box.jpg";
+
+const categoryImages: Record<string, string> = {
+  "telescopic-masts": telescopicMastsImg,
+  tripods: tripodsImg,
+  pedestals: pedestalsImg,
+  "junction-box": junctionBoxImg,
+};
+
 const AdminProducts = () => {
   const { data: categories, isLoading } = useAllCategoriesWithData();
   const queryClient = useQueryClient();
