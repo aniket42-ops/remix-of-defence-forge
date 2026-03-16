@@ -11,43 +11,34 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Restore session first
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        try {
-          const { data } = await supabase.rpc("get_user_role", {
-            _user_id: session.user.id,
-          });
-          setRole((data as AppRole) || null);
-        } catch {
-          setRole(null);
-        }
-      }
-      setLoading(false);
-    });
-
-    // Listen for subsequent auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          try {
-            const { data } = await supabase.rpc("get_user_role", {
-              _user_id: session.user.id,
-            });
-            setRole((data as AppRole) || null);
-          } catch {
-            setRole(null);
-          }
+          // Fetch role using security definer function
+          const { data } = await supabase.rpc("get_user_role", {
+            _user_id: session.user.id,
+          });
+          setRole((data as AppRole) || null);
         } else {
           setRole(null);
         }
         setLoading(false);
       }
     );
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        const { data } = await supabase.rpc("get_user_role", {
+          _user_id: session.user.id,
+        });
+        setRole((data as AppRole) || null);
+      }
+      setLoading(false);
+    });
 
     return () => subscription.unsubscribe();
   }, []);
