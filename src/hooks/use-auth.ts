@@ -11,55 +11,36 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-
-    // Timeout fallback: if auth doesn't resolve in 5s, stop loading
-    const timeout = setTimeout(() => {
-      if (mounted && loading) {
-        console.warn("Auth loading timeout - forcing ready state");
-        setLoading(false);
-      }
-    }, 5000);
-
-    // Set up auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          try {
-            const { data } = await supabase.rpc("get_user_role", {
-              _user_id: session.user.id,
-            });
-            if (mounted) setRole((data as AppRole) || null);
-          } catch {
-            if (mounted) setRole(null);
-          }
+          // Fetch role using security definer function
+          const { data } = await supabase.rpc("get_user_role", {
+            _user_id: session.user.id,
+          });
+          setRole((data as AppRole) || null);
         } else {
           setRole(null);
         }
-        if (mounted) setLoading(false);
+        setLoading(false);
       }
     );
 
-    // Also call getSession as backup
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (!session?.user) {
-        setLoading(false);
+      if (session?.user) {
+        const { data } = await supabase.rpc("get_user_role", {
+          _user_id: session.user.id,
+        });
+        setRole((data as AppRole) || null);
       }
-    }).catch(() => {
-      if (mounted) setLoading(false);
+      setLoading(false);
     });
 
-    return () => {
-      mounted = false;
-      clearTimeout(timeout);
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const signOut = async () => {
