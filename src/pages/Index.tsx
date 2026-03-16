@@ -4,7 +4,7 @@ import { Shield, ChevronDown, Loader2 } from "lucide-react";
 import heroBanner from "@/assets/hero-banner.jpg";
 
 const Index = () => {
-  const { data: categories, isLoading } = useCategories();
+  const { data: categories, isLoading, error } = useCategories();
 
   return (
     <div>
