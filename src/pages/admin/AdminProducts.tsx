@@ -6,18 +6,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 
-import telescopicMastsImg from "@/assets/telescopic-masts.jpg";
-import tripodsImg from "@/assets/tripods.jpg";
-import pedestalsImg from "@/assets/pedestals.jpg";
-import junctionBoxImg from "@/assets/junction-box.jpg";
-
-const categoryImages: Record<string, string> = {
-  "telescopic-masts": telescopicMastsImg,
-  tripods: tripodsImg,
-  pedestals: pedestalsImg,
-  "junction-box": junctionBoxImg,
-};
-
 const AdminProducts = () => {
   const { data: categories, isLoading } = useAllCategoriesWithData();
   const queryClient = useQueryClient();
@@ -63,16 +51,7 @@ const AdminProducts = () => {
 
       {categories?.map((cat) => (
         <div key={cat.id} className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            {categoryImages[cat.slug] && (
-              <img
-                src={categoryImages[cat.slug]}
-                alt={cat.title}
-                className="h-10 w-10 rounded object-cover border border-border"
-              />
-            )}
-            <h2 className="font-heading text-lg font-bold uppercase tracking-wider text-primary">{cat.title}</h2>
-          </div>
+          <h2 className="font-heading text-lg font-bold uppercase tracking-wider text-primary mb-3">{cat.title}</h2>
           {cat.subCategories.map((sub) => (
             <div key={sub.id} className="mb-4">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-2">{sub.title}</h3>

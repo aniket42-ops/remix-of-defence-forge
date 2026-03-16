@@ -37,7 +37,7 @@ const Mast3DViewer = () => {
 
   return (
     <div
-      className="shrink-0 w-44 h-56 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+      className="shrink-0 w-32 h-40 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
       style={{ perspective: "800px" }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -55,7 +55,7 @@ const Mast3DViewer = () => {
         <img
           src={mastImage}
           alt="PTM Light Duty Mast"
-          className="h-52 w-auto object-contain pointer-events-none opacity-80"
+          className="h-36 w-auto object-contain pointer-events-none opacity-80"
           draggable={false}
           style={{
             filter: `drop-shadow(${-rotateY * 0.2}px ${3 + rotateX * 0.15}px 8px hsl(var(--primary) / 0.12))`,
