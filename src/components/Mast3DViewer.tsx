@@ -37,7 +37,7 @@ const Mast3DViewer = () => {
 
   return (
     <div
-      className="shrink-0 w-32 h-40 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
+      className="shrink-0 w-44 h-56 flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
       style={{ perspective: "800px" }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
