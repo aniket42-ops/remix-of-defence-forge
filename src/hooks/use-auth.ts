@@ -11,9 +11,20 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth listener FIRST (fires with initial session too)
+    let mounted = true;
+
+    // Timeout fallback: if auth doesn't resolve in 5s, stop loading
+    const timeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn("Auth loading timeout - forcing ready state");
+        setLoading(false);
+      }
+    }, 5000);
+
+    // Set up auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (!mounted) return;
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -21,29 +32,34 @@ export function useAuth() {
             const { data } = await supabase.rpc("get_user_role", {
               _user_id: session.user.id,
             });
-            setRole((data as AppRole) || null);
+            if (mounted) setRole((data as AppRole) || null);
           } catch {
-            setRole(null);
+            if (mounted) setRole(null);
           }
         } else {
           setRole(null);
         }
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     );
 
-    // Also call getSession to handle edge cases, with catch to prevent hangs
+    // Also call getSession as backup
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       setUser(session?.user ?? null);
       if (!session?.user) {
         setLoading(false);
       }
     }).catch(() => {
-      setLoading(false);
+      if (mounted) setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
