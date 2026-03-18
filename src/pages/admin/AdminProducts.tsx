@@ -6,6 +6,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
+import ProductVariantFormDialog from "@/components/admin/ProductVariantFormDialog";
+import type { Tables } from "@/integrations/supabase/types";
 
 import telescopicMastsImg from "@/assets/telescopic-masts.jpg";
 import tripodsImg from "@/assets/tripods.jpg";
@@ -24,6 +26,8 @@ const AdminProducts = () => {
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState<string | null>(null);
   const { canEdit, isSales } = useAuthContext();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingVariant, setEditingVariant] = useState<Tables<"product_variants"> | null>(null);
 
   const handleDelete = async (variantId: string, modelNo: string) => {
     if (!canEdit) { toast.error("View-only access"); return; }
