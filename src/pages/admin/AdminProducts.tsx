@@ -154,6 +154,24 @@ const AdminProducts = () => {
           ))}
         </div>
       ))}
+      {categories && (
+        <ProductVariantFormDialog
+          open={formOpen}
+          onOpenChange={setFormOpen}
+          variant={editingVariant}
+          categories={categories.map((c) => ({
+            id: c.id,
+            title: c.title,
+            slug: c.slug,
+            subCategories: c.subCategories.map((s) => ({
+              id: s.id,
+              title: s.title,
+              slug: s.slug,
+              category_id: s.category_id,
+            })),
+          }))}
+        />
+      )}
     </div>
   );
 };
