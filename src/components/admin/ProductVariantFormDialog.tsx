@@ -169,7 +169,7 @@ export default function ProductVariantFormDialog({ open, onOpenChange, variant, 
     } else {
       const { error } = await supabase
         .from("product_variants")
-        .insert({ ...values, model_no: modelNo });
+        .insert([{ ...values, model_no: modelNo }]);
       setSaving(false);
       if (error) {
         toast.error("Failed to add variant");
