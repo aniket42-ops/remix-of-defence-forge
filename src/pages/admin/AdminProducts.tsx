@@ -131,7 +131,7 @@ const AdminProducts = () => {
                         {canEdit && (
                           <div className="flex gap-1">
                             <button
-                              onClick={() => toast.info("Edit form coming soon")}
+                              onClick={() => { setEditingVariant(v); setFormOpen(true); }}
                               className="rounded p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                             >
                               <Pencil className="h-3.5 w-3.5" />
