@@ -6,6 +6,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
+import ProductVariantFormDialog from "@/components/admin/ProductVariantFormDialog";
+import type { Tables } from "@/integrations/supabase/types";
 
 import telescopicMastsImg from "@/assets/telescopic-masts.jpg";
 import tripodsImg from "@/assets/tripods.jpg";
@@ -24,6 +26,8 @@ const AdminProducts = () => {
   const queryClient = useQueryClient();
   const [deleting, setDeleting] = useState<string | null>(null);
   const { canEdit, isSales } = useAuthContext();
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingVariant, setEditingVariant] = useState<Tables<"product_variants"> | null>(null);
 
   const handleDelete = async (variantId: string, modelNo: string) => {
     if (!canEdit) { toast.error("View-only access"); return; }
@@ -54,7 +58,7 @@ const AdminProducts = () => {
         </div>
         {canEdit && (
           <button
-            onClick={() => toast.info("Add product form coming soon")}
+            onClick={() => { setEditingVariant(null); setFormOpen(true); }}
             className="inline-flex items-center gap-2 rounded bg-primary px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/80"
           >
             <Plus className="h-4 w-4" /> Add Variant
@@ -127,7 +131,7 @@ const AdminProducts = () => {
                         {canEdit && (
                           <div className="flex gap-1">
                             <button
-                              onClick={() => toast.info("Edit form coming soon")}
+                              onClick={() => { setEditingVariant(v); setFormOpen(true); }}
                               className="rounded p-1.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                             >
                               <Pencil className="h-3.5 w-3.5" />
@@ -150,6 +154,24 @@ const AdminProducts = () => {
           ))}
         </div>
       ))}
+      {categories && (
+        <ProductVariantFormDialog
+          open={formOpen}
+          onOpenChange={setFormOpen}
+          variant={editingVariant}
+          categories={categories.map((c) => ({
+            id: c.id,
+            title: c.title,
+            slug: c.slug,
+            subCategories: c.subCategories.map((s) => ({
+              id: s.id,
+              title: s.title,
+              slug: s.slug,
+              category_id: s.category_id,
+            })),
+          }))}
+        />
+      )}
     </div>
   );
 };
