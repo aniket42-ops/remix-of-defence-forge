@@ -155,10 +155,30 @@ export default function ProductVariantFormDialog({ open, onOpenChange, variant, 
     setSaving(true);
     const modelNo = isEdit ? variant!.model_no : generatedModelNo;
 
+    const payload = {
+      sub_category_id: values.sub_category_id,
+      height_erected: values.height_erected,
+      height_retracted: values.height_retracted,
+      head_load: values.head_load,
+      weight: values.weight,
+      sections: values.sections,
+      wind_area: values.wind_area,
+      wind_speed_operational: values.wind_speed_operational,
+      wind_speed_survival: values.wind_speed_survival,
+      tube_dia: values.tube_dia,
+      sway: values.sway,
+      guy_ropes: values.guy_ropes,
+      tripod_guy_ropes: values.tripod_guy_ropes,
+      tripod_weight: values.tripod_weight,
+      base_price: values.base_price,
+      visible: values.visible,
+      model_no: modelNo,
+    };
+
     if (isEdit) {
       const { error } = await supabase
         .from("product_variants")
-        .update({ ...values, model_no: modelNo })
+        .update(payload)
         .eq("id", variant!.id);
       setSaving(false);
       if (error) {
@@ -169,7 +189,7 @@ export default function ProductVariantFormDialog({ open, onOpenChange, variant, 
     } else {
       const { error } = await supabase
         .from("product_variants")
-        .insert([{ ...values, model_no: modelNo }]);
+        .insert([payload]);
       setSaving(false);
       if (error) {
         toast.error("Failed to add variant");
