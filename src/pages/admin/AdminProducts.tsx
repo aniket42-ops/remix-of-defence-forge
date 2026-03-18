@@ -58,7 +58,7 @@ const AdminProducts = () => {
         </div>
         {canEdit && (
           <button
-            onClick={() => toast.info("Add product form coming soon")}
+            onClick={() => { setEditingVariant(null); setFormOpen(true); }}
             className="inline-flex items-center gap-2 rounded bg-primary px-4 py-2 text-xs font-bold uppercase tracking-wider text-primary-foreground hover:bg-primary/80"
           >
             <Plus className="h-4 w-4" /> Add Variant
