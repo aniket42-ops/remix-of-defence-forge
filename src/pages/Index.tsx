@@ -313,9 +313,6 @@ const ProductsSection = () => {
                         </Link>
                       </div>
                     </div>
-
-                  </div>
-
                   </div>
                 )}
               </div>
