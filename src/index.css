@@ -7,54 +7,59 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 215 30% 18%;
+    --foreground: 0 0% 13%;
 
-    --card: 210 20% 98%;
-    --card-foreground: 215 30% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 30% 18%;
+    --popover-foreground: 0 0% 13%;
 
-    --primary: 215 65% 36%;
+    /* Primary Red */
+    --primary: 2 76% 55%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 25% 93%;
-    --secondary-foreground: 215 30% 25%;
+    /* Dark Red */
+    --primary-dark: 0 65% 47%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 15% 50%;
+    --secondary: 0 0% 97%;
+    --secondary-foreground: 0 0% 13%;
 
-    --accent: 0 72% 51%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 2 76% 55%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 20% 88%;
-    --input: 210 20% 92%;
-    --ring: 215 65% 36%;
+    --border: 0 0% 90%;
+    --input: 0 0% 94%;
+    --ring: 2 76% 55%;
 
     --radius: 0.375rem;
 
-    --sidebar-background: 215 40% 22%;
-    --sidebar-foreground: 210 20% 92%;
-    --sidebar-primary: 210 60% 55%;
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 92%;
+    --sidebar-primary: 2 76% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 215 35% 28%;
-    --sidebar-accent-foreground: 210 20% 95%;
-    --sidebar-border: 215 30% 30%;
-    --sidebar-ring: 210 60% 55%;
+    --sidebar-accent: 0 0% 12%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 2 76% 55%;
 
     /* Custom tokens */
-    --surface-elevated: 210 15% 97%;
+    --surface-elevated: 0 0% 98%;
     --surface-overlay: 0 0% 100%;
+    --surface-dark: 0 0% 7%;
     --tech-green: 150 55% 40%;
     --tech-green-foreground: 0 0% 100%;
     --warning: 35 85% 50%;
     --warning-foreground: 0 0% 100%;
 
-    /* Navy bar */
-    --navbar: 215 45% 20%;
+    /* Navy bar → now black-dark for corporate industrial */
+    --navbar: 0 0% 7%;
     --navbar-foreground: 0 0% 100%;
 
     /* Fonts */
@@ -63,13 +68,14 @@
     --font-body: 'Inter', sans-serif;
 
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(215 45% 20%), hsl(215 40% 28%), hsl(210 35% 32%));
-    --gradient-card: linear-gradient(180deg, hsl(210 20% 98%), hsl(210 15% 95%));
-    --gradient-accent: linear-gradient(135deg, hsl(215 65% 36%), hsl(210 60% 45%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%), hsl(0 0% 97%));
+    --gradient-red: linear-gradient(135deg, hsl(2 76% 55%), hsl(0 65% 47%));
+    --gradient-dark: linear-gradient(135deg, hsl(0 0% 7%), hsl(0 0% 12%));
 
     /* Shadows */
-    --shadow-card: 0 4px 20px -4px hsl(215 30% 20% / 0.08);
-    --shadow-elevated: 0 8px 30px -8px hsl(215 30% 20% / 0.12);
+    --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.08);
+    --shadow-elevated: 0 12px 40px -8px hsl(0 0% 0% / 0.15);
+    --shadow-red: 0 12px 40px -12px hsl(2 76% 55% / 0.4);
   }
 }
 
@@ -81,13 +87,13 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body);
-    background-image: radial-gradient(circle, hsl(215 30% 75% / 0.3) 1px, transparent 1px);
-    background-size: 20px 20px;
+    background-image: radial-gradient(circle, hsl(0 0% 85% / 0.4) 1px, transparent 1px);
+    background-size: 22px 22px;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    @apply font-semibold tracking-wide uppercase;
+    @apply font-semibold tracking-wide;
   }
 }
 
@@ -114,6 +120,38 @@
   }
 
   .glow-border {
-    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.2), 0 0 20px -5px hsl(var(--primary) / 0.08);
+    box-shadow: 0 0 0 1px hsl(var(--primary) / 0.15), 0 8px 24px -8px hsl(var(--primary) / 0.15);
+  }
+
+  /* Scroll-reveal fade-up */
+  .reveal-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+  .reveal-up.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Hide scrollbar on horizontal scroll */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+@layer utilities {
+  .text-primary-dark {
+    color: hsl(var(--primary-dark));
+  }
+  .bg-primary-dark {
+    background-color: hsl(var(--primary-dark));
+  }
+  .bg-surface-dark {
+    background-color: hsl(var(--surface-dark));
   }
 }
