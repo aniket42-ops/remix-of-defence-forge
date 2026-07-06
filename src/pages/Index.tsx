@@ -226,16 +226,16 @@ const ProductsSection = () => {
           </div>
         ) : (
           <>
-            {/* Mobile horizontal tabs */}
-            <div className="lg:hidden mb-6 -mx-4 px-4 no-scrollbar overflow-x-auto">
-              <div className="flex gap-2 min-w-max">
+            {/* Mobile tabs — wrap so no horizontal scroll */}
+            <div className="lg:hidden mb-6">
+              <div className="flex flex-wrap gap-2">
                 {categories?.map((cat) => {
                   const isActive = active?.slug === cat.slug;
                   return (
                     <button
                       key={cat.slug}
                       onClick={() => setActiveSlug(cat.slug)}
-                      className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-heading font-bold uppercase tracking-wider transition-colors ${
+                      className={`px-3.5 py-2 rounded-full text-xs sm:text-sm font-heading font-bold uppercase tracking-wider transition-colors ${
                         isActive
                           ? "bg-primary text-primary-foreground"
                           : "bg-white text-foreground border border-border hover:border-primary/50"
@@ -312,30 +312,6 @@ const ProductsSection = () => {
                           <ArrowRight className="h-3.5 w-3.5" />
                         </Link>
                       </div>
-                    </div>
-
-                    {/* Quick jumps for the other categories */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {categories
-                        ?.filter((c) => c.slug !== active.slug)
-                        .slice(0, 3)
-                        .map((c) => (
-                          <button
-                            key={c.slug}
-                            onClick={() => setActiveSlug(c.slug)}
-                            className="group text-left rounded-lg border border-border bg-white p-4 hover:border-primary/50 hover:shadow-md transition-all"
-                          >
-                            <img
-                              src={c.resolvedImage}
-                              alt={c.title}
-                              loading="lazy"
-                              className="h-24 w-full object-cover rounded mb-3"
-                            />
-                            <p className="font-heading text-sm font-bold uppercase text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                              {c.title}
-                            </p>
-                          </button>
-                        ))}
                     </div>
                   </div>
                 )}
