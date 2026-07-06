@@ -314,29 +314,8 @@ const ProductsSection = () => {
                       </div>
                     </div>
 
-                    {/* Quick jumps for the other categories */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      {categories
-                        ?.filter((c) => c.slug !== active.slug)
-                        .slice(0, 3)
-                        .map((c) => (
-                          <button
-                            key={c.slug}
-                            onClick={() => setActiveSlug(c.slug)}
-                            className="group text-left rounded-lg border border-border bg-white p-4 hover:border-primary/50 hover:shadow-md transition-all"
-                          >
-                            <img
-                              src={c.resolvedImage}
-                              alt={c.title}
-                              loading="lazy"
-                              className="h-24 w-full object-cover rounded mb-3"
-                            />
-                            <p className="font-heading text-sm font-bold uppercase text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                              {c.title}
-                            </p>
-                          </button>
-                        ))}
-                    </div>
+                  </div>
+
                   </div>
                 )}
               </div>
