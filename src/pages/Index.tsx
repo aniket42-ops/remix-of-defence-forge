@@ -244,17 +244,17 @@ const ProductsSection = () => {
                 {categories?.map((cat) => {
                   const isActive = active?.slug === cat.slug;
                   return (
-                    <button
-                      key={cat.slug}
-                      onClick={() => setActiveSlug(cat.slug)}
-                      className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-heading font-bold uppercase tracking-wider transition-colors ${
-                        isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-white text-foreground border border-border hover:border-primary/50"
-                      }`}
-                    >
-                      {cat.title}
-                    </button>
+                    // <button
+                    //   key={cat.slug}
+                    //   onClick={() => setActiveSlug(cat.slug)}
+                    //   className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-heading font-bold uppercase tracking-wider transition-colors ${
+                    //     isActive
+                    //       ? "bg-primary text-primary-foreground"
+                    //       : "bg-white text-foreground border border-border hover:border-primary/50"
+                    //   }`}
+                    // >
+                    //   {cat.title}
+                    // </button>
                   );
                 })}
               </div>
