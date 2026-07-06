@@ -54,9 +54,8 @@ const HeroSection = () => (
           </h1>
 
           <p className="max-w-xl text-base md:text-lg text-muted-foreground mb-8 leading-relaxed">
-            Precision Electronics designs and manufactures mission-critical telescopic
-            masts, tripods, pedestals and junction systems for defence,
-            surveillance and communication applications worldwide.
+            Precision Electronics designs and manufactures mission-critical telescopic masts, tripods, pedestals and
+            junction systems for defence, surveillance and communication applications worldwide.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3">
@@ -114,12 +113,8 @@ const HeroSection = () => (
                   <Radio className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="font-heading text-2xl font-bold text-foreground leading-none">
-                    15+ Years
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Engineering defence-grade systems
-                  </p>
+                  <p className="font-heading text-2xl font-bold text-foreground leading-none">15+ Years</p>
+                  <p className="text-xs text-muted-foreground mt-1">Engineering defence-grade systems</p>
                 </div>
               </div>
             </div>
@@ -160,15 +155,12 @@ const AboutSection = () => {
               — About Precision Electronics
             </p>
             <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold uppercase text-foreground mb-6 leading-tight">
-              Building the backbone of{" "}
-              <span className="text-primary">critical communication</span> systems.
+              Building the backbone of <span className="text-primary">critical communication</span> systems.
             </h2>
             <p className="text-base md:text-lg text-muted-foreground mb-8 leading-relaxed">
-              For over 15 years, Precision Electronics has engineered mission-critical
-              hardware trusted by defence forces, communication operators, and
-              surveillance agencies. Every mast, tripod, and junction system is
-              designed, tested, and manufactured in-house to withstand the world&apos;s
-              most demanding environments.
+              For over 15 years, Precision Electronics has engineered mission-critical hardware trusted by defence
+              forces, communication operators, and surveillance agencies. Every mast, tripod, and junction system is
+              designed, tested, and manufactured in-house to withstand the world&apos;s most demanding environments.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
@@ -181,9 +173,7 @@ const AboutSection = () => {
                 <div key={f.title} className="flex gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-heading font-bold uppercase text-sm text-foreground">
-                      {f.title}
-                    </p>
+                    <p className="font-heading font-bold uppercase text-sm text-foreground">{f.title}</p>
                     <p className="text-sm text-muted-foreground">{f.desc}</p>
                   </div>
                 </div>
@@ -222,9 +212,7 @@ const ProductsSection = () => {
       <div className="container">
         {/* Header */}
         <div className="mb-14 max-w-3xl">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-4">
-            — Our Products
-          </p>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-4">— Our Products</p>
           <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold uppercase text-foreground leading-tight">
             Engineered systems for
             <br />
@@ -239,7 +227,7 @@ const ProductsSection = () => {
         ) : (
           <>
             {/* Mobile horizontal tabs */}
-            <div className="lg:hidden mb-6 -mx-4 px-4 no-scrollbar overflow-x-auto">
+            {/* <div className="lg:hidden mb-6 -mx-4 px-4 no-scrollbar overflow-x-auto">
               <div className="flex gap-2 min-w-max">
                 {categories?.map((cat) => {
                   const isActive = active?.slug === cat.slug;
@@ -258,7 +246,7 @@ const ProductsSection = () => {
                   );
                 })}
               </div>
-            </div>
+            </div> */}
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14">
               {/* LEFT — vertical big-nav */}
@@ -315,9 +303,7 @@ const ProductsSection = () => {
                         <h3 className="font-heading text-2xl md:text-3xl font-bold uppercase text-white mb-2">
                           {active.title}
                         </h3>
-                        <p className="text-white/80 max-w-lg text-sm md:text-base mb-4">
-                          {active.description}
-                        </p>
+                        <p className="text-white/80 max-w-lg text-sm md:text-base mb-4">{active.description}</p>
                         <Link
                           to={`/category/${active.slug}`}
                           className="inline-flex items-center gap-2 rounded bg-primary px-5 py-2.5 font-heading text-xs font-bold uppercase tracking-widest text-primary-foreground hover:bg-primary-dark transition-colors"
@@ -383,17 +369,14 @@ const IndustriesSection = () => {
       <div className="container">
         <div className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-4">
-              — Industries We Serve
-            </p>
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-4">— Industries We Serve</p>
             <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold uppercase text-foreground leading-tight">
               Trusted across
               <span className="text-primary"> critical sectors.</span>
             </h2>
           </div>
           <p className="text-muted-foreground max-w-md">
-            Our systems are deployed with defence agencies, telecom operators and
-            infrastructure teams across the globe.
+            Our systems are deployed with defence agencies, telecom operators and infrastructure teams across the globe.
           </p>
         </div>
 
@@ -409,9 +392,7 @@ const IndustriesSection = () => {
               <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
                 <ind.icon className="h-6 w-6" />
               </div>
-              <h3 className="font-heading text-lg font-bold uppercase text-foreground mb-1">
-                {ind.title}
-              </h3>
+              <h3 className="font-heading text-lg font-bold uppercase text-foreground mb-1">{ind.title}</h3>
               <p className="text-sm text-muted-foreground leading-snug">{ind.desc}</p>
             </div>
           ))}
@@ -463,9 +444,7 @@ const WhyChooseUsSection = () => {
     <section ref={ref} className="py-20 md:py-28 bg-[hsl(0_0%_98%)]">
       <div className="container">
         <div className="mb-12 text-center max-w-3xl mx-auto">
-          <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-4">
-            — Why Choose Us
-          </p>
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-4">— Why Choose Us</p>
           <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold uppercase text-foreground leading-tight">
             The Precision <span className="text-primary">advantage.</span>
           </h2>
@@ -485,9 +464,7 @@ const WhyChooseUsSection = () => {
                   <w.icon className="h-6 w-6" />
                 </div>
                 <div>
-                  <h3 className="font-heading text-lg font-bold uppercase text-foreground mb-1.5">
-                    {w.title}
-                  </h3>
+                  <h3 className="font-heading text-lg font-bold uppercase text-foreground mb-1.5">{w.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{w.desc}</p>
                 </div>
               </div>
@@ -510,9 +487,7 @@ const StatCounter = ({ value, suffix, label }: { value: number; suffix?: string;
         <span ref={ref}>0</span>
         <span className="text-primary">{suffix}</span>
       </p>
-      <p className="mt-3 font-mono text-xs uppercase tracking-widest text-white/60">
-        {label}
-      </p>
+      <p className="mt-3 font-mono text-xs uppercase tracking-widest text-white/60">{label}</p>
     </div>
   );
 };
@@ -523,12 +498,7 @@ const CapabilitiesSection = () => {
     <section ref={ref} className="relative overflow-hidden bg-surface-dark text-white">
       {/* subtle bg image */}
       <div className="absolute inset-0">
-        <img
-          src={manufacturingCapabilities}
-          alt=""
-          loading="lazy"
-          className="h-full w-full object-cover opacity-15"
-        />
+        <img src={manufacturingCapabilities} alt="" loading="lazy" className="h-full w-full object-cover opacity-15" />
         <div className="absolute inset-0 bg-gradient-to-b from-[hsl(0_0%_7%)]/95 via-[hsl(0_0%_7%)]/85 to-[hsl(0_0%_7%)]" />
       </div>
       {/* red accent line */}
@@ -546,9 +516,8 @@ const CapabilitiesSection = () => {
               <span className="text-primary">battlefield-ready</span> hardware.
             </h2>
             <p className="text-white/70 text-base md:text-lg leading-relaxed mb-8 max-w-lg">
-              Our vertically integrated facility combines CNC machining, precision
-              fabrication, surface treatment and system assembly under one roof —
-              enabling us to control quality at every stage.
+              Our vertically integrated facility combines CNC machining, precision fabrication, surface treatment and
+              system assembly under one roof — enabling us to control quality at every stage.
             </p>
             <div className="space-y-3">
               {[
@@ -589,17 +558,15 @@ const CTASection = () => (
 
         <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
           <div className="lg:col-span-2">
-            <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-3">
-              — Get in touch
-            </p>
+            <p className="font-mono text-xs uppercase tracking-[0.3em] text-primary mb-3">— Get in touch</p>
             <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold uppercase text-white leading-tight">
               Ready to spec your next
               <br />
               <span className="text-primary">deployment?</span>
             </h2>
             <p className="mt-4 text-white/70 max-w-xl">
-              Talk to our engineering team about custom masts, tripods, pedestals
-              and junction systems tailored to your mission.
+              Talk to our engineering team about custom masts, tripods, pedestals and junction systems tailored to your
+              mission.
             </p>
           </div>
           <div className="lg:col-span-1 flex flex-col sm:flex-row lg:flex-col gap-3">
