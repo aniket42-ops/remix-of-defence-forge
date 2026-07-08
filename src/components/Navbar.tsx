@@ -12,6 +12,7 @@ const Navbar = () => {
   const links = [
     { to: "/", label: "Home" },
     { to: "/category/telescopic-masts", label: "Products" },
+    { to: "/selector", label: "Mast Selector" },
   ];
 
   const handleLogout = async () => {
