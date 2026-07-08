@@ -46,14 +46,24 @@ const CategoryPage = () => {
         <span className="text-foreground">{cat.title}</span>
       </nav>
 
-      <div className="mb-8">
-        <p className="font-mono text-xs uppercase tracking-widest text-primary mb-1">
-          {isMultiStep ? "Select Technology" : "Sub Categories"}
-        </p>
-        <h1 className="font-heading text-2xl md:text-3xl font-bold uppercase tracking-wider text-foreground">
-          {cat.title}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{cat.description}</p>
+      <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+        <div>
+          <p className="font-mono text-xs uppercase tracking-widest text-primary mb-1">
+            {isMultiStep ? "Select Technology" : "Sub Categories"}
+          </p>
+          <h1 className="font-heading text-2xl md:text-3xl font-bold uppercase tracking-wider text-foreground">
+            {cat.title}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-2 max-w-2xl">{cat.description}</p>
+        </div>
+        {isMultiStep && (
+          <Link
+            to="/selector"
+            className="inline-flex items-center gap-2 self-start md:self-auto rounded-md bg-primary px-5 py-2.5 text-sm font-medium uppercase tracking-wider text-primary-foreground hover:bg-primary/90 shadow-sm"
+          >
+            Use Mast Selector <ChevronRight className="h-4 w-4" />
+          </Link>
+        )}
       </div>
 
       {isMultiStep ? (

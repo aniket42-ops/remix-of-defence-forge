@@ -11,6 +11,7 @@ import CategoryPage from "./pages/CategoryPage.tsx";
 import TechnologyPage from "./pages/TechnologyPage.tsx";
 import MastTypePage from "./pages/MastTypePage.tsx";
 import ProductVariantsPage from "./pages/ProductVariantsPage.tsx";
+import SelectorPage from "./pages/SelectorPage.tsx";
 import LoginPage from "./pages/LoginPage.tsx";
 import AdminLayout from "./pages/admin/AdminLayout.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
@@ -33,6 +34,7 @@ const App = () => (
             <div className="flex-1">
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/selector" element={<SelectorPage />} />
                 <Route path="/category/:category" element={<CategoryPage />} />
                 <Route path="/category/:category/t/:technology" element={<TechnologyPage />} />
                 <Route path="/category/:category/t/:technology/:mastType" element={<MastTypePage />} />
