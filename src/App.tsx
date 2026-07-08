@@ -34,6 +34,7 @@ const App = () => (
             <div className="flex-1">
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/selector" element={<SelectorPage />} />
                 <Route path="/category/:category" element={<CategoryPage />} />
                 <Route path="/category/:category/t/:technology" element={<TechnologyPage />} />
                 <Route path="/category/:category/t/:technology/:mastType" element={<MastTypePage />} />
