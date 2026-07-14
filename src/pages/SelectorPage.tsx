@@ -1,25 +1,31 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
-import { TECHNOLOGIES } from "@/data/catalogue";
-import { ChevronRight, ChevronLeft, Loader2, CheckCircle2, RotateCcw } from "lucide-react";
+import { ChevronRight, ChevronLeft, CheckCircle2, RotateCcw, Info } from "lucide-react";
+import {
+  ALL_PRODUCTS,
+  TECHNOLOGY_OPTIONS,
+  MOUNTING_OPTIONS,
+  recommend,
+  calculateDuty,
+  type Mounting,
+  type Technology,
+  type GuyedState,
+  type SelectorInput,
+} from "@/lib/recommendation-engine";
 
 type Selections = {
   payload: string;
-  mastType: string; // sub_category id (Light/Medium/Heavy)
+  technology: Technology | "";
   eh: string;
   rh: string;
-  operation: string;
-  mounting: string;
-  guyed: "Guyed" | "Unguyed" | "";
+  mounting: Mounting | "";
+  guyed: GuyedState | "";
   windArea: string;
   windSpeed: string;
   sway: string;
   accessories: string[];
 };
 
-const OPERATIONS = ["Manual", "Pneumatic", "Electromechanical"];
 const ACCESSORIES = [
   "Adapters & Bracket",
   "Compressor",
@@ -31,10 +37,9 @@ const ACCESSORIES = [
 
 const emptySel: Selections = {
   payload: "",
-  mastType: "",
+  technology: "",
   eh: "",
   rh: "",
-  operation: "",
   mounting: "",
   guyed: "",
   windArea: "",
@@ -45,10 +50,9 @@ const emptySel: Selections = {
 
 const STEPS = [
   "Payload Weight",
-  "Mast Type",
+  "Mast Technology",
   "Required Erected Height (EH)",
   "Required Retracted Height (RH)",
-  "Type of Operation",
   "Mounting",
   "Guyed / Unguyed",
   "Wind Area",
@@ -57,113 +61,86 @@ const STEPS = [
   "Accessories",
 ] as const;
 
-function useMastVariants() {
-  return useQuery({
-    queryKey: ["selector_mast_variants"],
-    queryFn: async () => {
-      const { data: cat } = await supabase.from("categories").select("id").eq("slug", "telescopic-masts").single();
-      if (!cat) return { subs: [], variants: [] as any[] };
-      const { data: subs } = await supabase.from("sub_categories").select("id,title,slug").eq("category_id", cat.id);
-      const subList = subs || [];
-      const { data: variants, error } = await supabase
-        .from("product_variants")
-        .select("*")
-        .in("sub_category_id", subList.map((s) => s.id))
-        .eq("visible", true);
-      if (error) throw error;
-      const subMap = new Map(subList.map((s) => [s.id, s]));
-      return {
-        subs: subList,
-        variants: (variants || []).map((v) => ({ ...v, sub: subMap.get(v.sub_category_id)! })),
-      };
-    },
-  });
-}
-
 const SelectorPage = () => {
   const [step, setStep] = useState(0);
   const [sel, setSel] = useState<Selections>(emptySel);
   const [done, setDone] = useState(false);
-  const { data, isLoading } = useMastVariants();
-  const variants = data?.variants || [];
-  const subs = data?.subs || [];
 
   const update = <K extends keyof Selections>(k: K, v: Selections[K]) => setSel((s) => ({ ...s, [k]: v }));
 
-  // Mast types available for entered payload
-  const availableMastTypes = useMemo(() => {
+  // Techs available for the entered payload
+  const availableTechs = useMemo<Technology[]>(() => {
     const p = parseFloat(sel.payload);
-    if (isNaN(p)) return [];
-    // A mast type qualifies if it has at least one variant that can carry the payload
-    const qualifyingIds = new Set(
-      variants.filter((v) => Number(v.head_load) >= p).map((v) => v.sub_category_id)
-    );
-    return subs.filter((s) => qualifyingIds.has(s.id));
-  }, [sel.payload, variants, subs]);
+    if (isNaN(p)) return TECHNOLOGY_OPTIONS;
+    const techs = new Set<Technology>();
+    ALL_PRODUCTS.forEach((prod) => {
+      if (prod.head_load_kg >= p) prod.technologies.forEach((t) => techs.add(t));
+    });
+    return TECHNOLOGY_OPTIONS.filter((t) => techs.has(t));
+  }, [sel.payload]);
 
-  // EH options for chosen mast type & payload
   const ehOptions = useMemo(() => {
-    if (!sel.mastType) return [];
+    if (!sel.technology) return [];
     const p = parseFloat(sel.payload);
-    const vs = variants.filter(
-      (v) => v.sub_category_id === sel.mastType && (isNaN(p) || Number(v.head_load) >= p)
-    );
-    return Array.from(new Set(vs.map((v) => Number(v.height_erected)))).sort((a, b) => a - b);
-  }, [sel.mastType, sel.payload, variants]);
-
-  // RH options limited by chosen EH
-  const rhOptions = useMemo(() => {
-    if (!sel.mastType || !sel.eh) return [];
-    const p = parseFloat(sel.payload);
-    const vs = variants.filter(
+    const vs = ALL_PRODUCTS.filter(
       (v) =>
-        v.sub_category_id === sel.mastType &&
-        Number(v.height_erected) === Number(sel.eh) &&
-        (isNaN(p) || Number(v.head_load) >= p)
+        v.technologies.includes(sel.technology as Technology) &&
+        (isNaN(p) || v.head_load_kg >= p) &&
+        v.extended_height_m !== null,
     );
-    return Array.from(new Set(vs.map((v) => Number(v.height_retracted)))).sort((a, b) => a - b);
-  }, [sel.mastType, sel.eh, sel.payload, variants]);
+    return Array.from(new Set(vs.map((v) => v.extended_height_m as number))).sort((a, b) => a - b);
+  }, [sel.technology, sel.payload]);
+
+  const rhOptions = useMemo(() => {
+    if (!sel.technology || !sel.eh) return [];
+    const p = parseFloat(sel.payload);
+    const vs = ALL_PRODUCTS.filter(
+      (v) =>
+        v.technologies.includes(sel.technology as Technology) &&
+        v.extended_height_m === Number(sel.eh) &&
+        (isNaN(p) || v.head_load_kg >= p) &&
+        v.retracted_height_m !== null,
+    );
+    return Array.from(new Set(vs.map((v) => v.retracted_height_m as number))).sort((a, b) => a - b);
+  }, [sel.technology, sel.eh, sel.payload]);
 
   const canNext = () => {
     switch (step) {
       case 0: return !!sel.payload && parseFloat(sel.payload) > 0;
-      case 1: return !!sel.mastType;
+      case 1: return !!sel.technology;
       case 2: return !!sel.eh;
       case 3: return !!sel.rh;
-      case 4: return !!sel.operation;
-      case 5: return !!sel.mounting;
-      case 6: return !!sel.guyed;
-      case 7: return !!sel.windArea;
-      case 8: return !!sel.windSpeed;
-      case 9: return !!sel.sway;
-      case 10: return true;
+      case 4: return !!sel.mounting;
+      case 5: return !!sel.guyed;
+      case 6: return !!sel.windArea;
+      case 7: return !!sel.windSpeed;
+      case 8: return !!sel.sway;
+      case 9: return true;
       default: return false;
     }
   };
 
-  const matches = useMemo(() => {
-    const p = parseFloat(sel.payload);
-    const wa = parseFloat(sel.windArea);
-    const ws = parseFloat(sel.windSpeed);
-    return variants.filter((v) => {
-      if (sel.mastType && v.sub_category_id !== sel.mastType) return false;
-      if (!isNaN(p) && Number(v.head_load) < p) return false;
-      if (sel.eh && Number(v.height_erected) !== Number(sel.eh)) return false;
-      if (sel.rh && Number(v.height_retracted) !== Number(sel.rh)) return false;
-      if (!isNaN(wa) && Number(v.wind_area) < wa) return false;
-      if (!isNaN(ws) && Number(v.wind_speed_operational) < ws) return false;
-      return true;
-    });
-  }, [variants, sel]);
+  const buildInput = (): SelectorInput => {
+    const num = (s: string) => (s ? parseFloat(s) : undefined);
+    return {
+      payload_kg: num(sel.payload),
+      technology: (sel.technology || undefined) as Technology | undefined,
+      mounting: (sel.mounting || undefined) as Mounting | undefined,
+      guyed: (sel.guyed || undefined) as GuyedState | undefined,
+      extended_height_m: num(sel.eh),
+      retracted_height_m: num(sel.rh),
+      wind_area_m2: num(sel.windArea),
+      wind_speed_kmph: num(sel.windSpeed),
+      sway_deg: num(sel.sway),
+    };
+  };
+
+  const result = useMemo(() => (done ? recommend(buildInput()) : null), [done, sel]);
+  const derivedDuty = sel.payload ? calculateDuty(parseFloat(sel.payload)) : undefined;
 
   const reset = () => { setSel(emptySel); setStep(0); setDone(false); };
 
-  if (isLoading) {
-    return <div className="container py-20 flex justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  }
-
-  if (done) {
-    const mastTypeTitle = subs.find((s) => s.id === sel.mastType)?.title;
+  if (done && result) {
     return (
       <div className="container py-8 max-w-5xl">
         <nav className="flex items-center gap-1 text-xs font-mono text-muted-foreground mb-6">
@@ -185,11 +162,11 @@ const SelectorPage = () => {
         <div className="grid md:grid-cols-2 gap-4 mb-8">
           {[
             ["Payload Weight", sel.payload && `${sel.payload} kg`],
-            ["Mast Type", mastTypeTitle],
+            ["Calculated Duty", derivedDuty],
+            ["Mast Technology", sel.technology],
             ["Erected Height (EH)", sel.eh && `${sel.eh} m`],
             ["Retracted Height (RH)", sel.rh && `${sel.rh} m`],
-            ["Type of Operation", sel.operation],
-            ["Mounting", TECHNOLOGIES.find((t) => t.slug === sel.mounting)?.title || sel.mounting],
+            ["Mounting", sel.mounting],
             ["Configuration", sel.guyed],
             ["Wind Area", sel.windArea && `${sel.windArea} m²`],
             ["Max Operating Wind Speed", sel.windSpeed && `${sel.windSpeed} km/h`],
@@ -214,39 +191,40 @@ const SelectorPage = () => {
         )}
 
         <div className="mb-8">
-          <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-foreground mb-4">
-            Matching Products <span className="text-primary">({matches.length})</span>
+          <h2 className="font-heading text-xl font-bold uppercase tracking-wider text-foreground mb-2">
+            {result.exact.length > 0 ? "Recommended Mast" : "Closest Matches"}
           </h2>
-          {matches.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No exact match found. Please contact our team for a custom configuration.</p>
+          <p className="text-sm text-muted-foreground mb-4">{result.message}</p>
+
+          {result.exact.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              {result.exact.map((p) => (
+                <div key={p.model_id} className="rounded-lg border border-primary/40 bg-primary/5 p-5">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-primary">New Model Number</p>
+                  <p className="font-heading text-lg font-bold text-foreground mb-3">{p.model_id}</p>
+                  <SpecGrid p={p} />
+                </div>
+              ))}
+            </div>
           ) : (
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-sm">
-                <thead className="bg-muted">
-                  <tr className="text-left font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-                    <th className="px-3 py-2">Model No.</th>
-                    <th className="px-3 py-2">Series</th>
-                    <th className="px-3 py-2">Erected H (m)</th>
-                    <th className="px-3 py-2">Retracted H (m)</th>
-                    <th className="px-3 py-2">Head Load (kg)</th>
-                    <th className="px-3 py-2">Wind Area (m²)</th>
-                    <th className="px-3 py-2">Wind Speed (km/h)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {matches.map((v) => (
-                    <tr key={v.id} className="border-t border-border hover:bg-muted/40">
-                      <td className="px-3 py-2 font-mono text-xs text-foreground">{v.model_no}</td>
-                      <td className="px-3 py-2 text-muted-foreground">{v.sub?.title}</td>
-                      <td className="px-3 py-2">{Number(v.height_erected)}</td>
-                      <td className="px-3 py-2">{Number(v.height_retracted)}</td>
-                      <td className="px-3 py-2">{Number(v.head_load)}</td>
-                      <td className="px-3 py-2">{Number(v.wind_area)}</td>
-                      <td className="px-3 py-2">{Number(v.wind_speed_operational)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="grid gap-4 md:grid-cols-3">
+              {result.suggestions.map(({ product: p, reasons }) => (
+                <div key={p.model_id} className="rounded-lg border border-border bg-card p-5">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-primary">New Model Number</p>
+                  <p className="font-heading text-base font-bold text-foreground mb-3">{p.model_id}</p>
+                  <SpecGrid p={p} />
+                  {reasons.length > 0 && (
+                    <div className="mt-3 space-y-1 border-t border-border pt-3">
+                      {reasons.map((r) => (
+                        <p key={r} className="flex items-start gap-1.5 text-[11px] text-muted-foreground">
+                          <Info className="h-3 w-3 mt-0.5 shrink-0" />
+                          {r}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -300,24 +278,24 @@ const SelectorPage = () => {
 
         {step === 0 && (
           <NumField label="Payload / Head Load" unit="kg" value={sel.payload} onChange={(v) => {
-            setSel((s) => ({ ...s, payload: v, mastType: "", eh: "", rh: "" }));
+            setSel((s) => ({ ...s, payload: v, technology: "", eh: "", rh: "" }));
           }} placeholder="e.g. 15" />
         )}
 
         {step === 1 && (
-          availableMastTypes.length === 0 ? (
+          availableTechs.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No mast type available for {sel.payload} kg payload. Please go back and reduce the payload weight, or contact our team for a custom configuration.
+              No mast technology available for {sel.payload} kg payload. Please go back and reduce the payload weight, or contact our team for a custom configuration.
             </p>
           ) : (
             <>
               <p className="text-sm text-muted-foreground mb-4">
-                Based on your payload of <span className="text-foreground font-medium">{sel.payload} kg</span>, the following mast type(s) are suitable:
+                Based on your payload of <span className="text-foreground font-medium">{sel.payload} kg</span> ({derivedDuty}), the following mast technologies are suitable:
               </p>
               <Choice
-                options={availableMastTypes.map((m) => ({ v: m.id, label: m.title }))}
-                value={sel.mastType}
-                onChange={(v) => setSel((s) => ({ ...s, mastType: v, eh: "", rh: "" }))}
+                options={availableTechs.map((t) => ({ v: t, label: t }))}
+                value={sel.technology}
+                onChange={(v) => setSel((s) => ({ ...s, technology: v as Technology, eh: "", rh: "" }))}
               />
             </>
           )
@@ -354,34 +332,34 @@ const SelectorPage = () => {
         )}
 
         {step === 4 && (
-          <Choice options={OPERATIONS.map((o) => ({ v: o, label: o }))} value={sel.operation} onChange={(v) => update("operation", v)} />
-        )}
-
-        {step === 5 && (
-          <Choice options={TECHNOLOGIES.map((t) => ({ v: t.slug, label: t.title }))} value={sel.mounting} onChange={(v) => update("mounting", v)} />
-        )}
-
-        {step === 6 && (
           <Choice
-            options={[{ v: "Guyed", label: "Guyed" }, { v: "Unguyed", label: "Unguyed" }]}
-            value={sel.guyed}
-            onChange={(v) => update("guyed", v as "Guyed" | "Unguyed")}
+            options={MOUNTING_OPTIONS.map((m) => ({ v: m, label: m }))}
+            value={sel.mounting}
+            onChange={(v) => update("mounting", v as Mounting)}
           />
         )}
 
-        {step === 7 && (
+        {step === 5 && (
+          <Choice
+            options={[{ v: "Guyed", label: "Guyed" }, { v: "Unguyed", label: "Unguyed" }]}
+            value={sel.guyed}
+            onChange={(v) => update("guyed", v as GuyedState)}
+          />
+        )}
+
+        {step === 6 && (
           <NumField label="Wind Area" unit="m²" value={sel.windArea} onChange={(v) => update("windArea", v)} placeholder="e.g. 0.35" />
         )}
 
-        {step === 8 && (
+        {step === 7 && (
           <NumField label="Maximum Operating Wind Speed" unit="km/h" value={sel.windSpeed} onChange={(v) => update("windSpeed", v)} placeholder="e.g. 80" />
         )}
 
-        {step === 9 && (
+        {step === 8 && (
           <NumField label="Permissible Sway" unit="°" value={sel.sway} onChange={(v) => update("sway", v)} placeholder="e.g. 2" />
         )}
 
-        {step === 10 && (
+        {step === 9 && (
           <div>
             <p className="text-sm text-muted-foreground mb-4">Select any additional accessories required (optional).</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
