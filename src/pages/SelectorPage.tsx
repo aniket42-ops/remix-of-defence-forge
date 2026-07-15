@@ -11,6 +11,7 @@ import {
   type Technology,
   type GuyedState,
   type SelectorInput,
+  type Product,
 } from "@/lib/recommendation-engine";
 
 type Selections = {
@@ -454,3 +455,30 @@ const Choice = ({ options, value, onChange }: { options: { v: string; label: str
 );
 
 export default SelectorPage;
+
+const SpecGrid = ({ p }: { p: Product }) => {
+  const rows: [string, string | number | null][] = [
+    ["Technology", p.technologies.join(" / ")],
+    ["Duty", p.duty],
+    ["Head Load", `${p.head_load_kg} kg`],
+    ["Erected Height", p.extended_height_m !== null ? `${p.extended_height_m} m` : "—"],
+    ["Retracted Height", p.retracted_height_m !== null ? `${p.retracted_height_m} m` : "—"],
+    ["Mast Weight", `${p.weight_of_mast_kg} kg`],
+    ["Wind Area", p.wind_area_m2 !== null ? `${p.wind_area_m2} m²` : "—"],
+    ["Wind Speed (Op/Surv)", p.wind_speed_op_kmph !== null ? `${p.wind_speed_op_kmph}${p.wind_speed_survival_kmph ? ` / ${p.wind_speed_survival_kmph}` : ""} km/h` : "—"],
+    ["Sway", p.sway_deg !== null ? `${p.sway_deg}°` : "—"],
+    ["Sections", p.no_of_sections],
+    ["Tube Dia", p.tube_dia_mm !== null ? `${p.tube_dia_mm} mm` : "—"],
+    ["Configuration", p.guyed],
+  ];
+  return (
+    <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+      {rows.map(([k, v]) => (
+        <div key={k} className="flex flex-col">
+          <dt className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground">{k}</dt>
+          <dd className="text-foreground">{v ?? "—"}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+};
