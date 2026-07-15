@@ -11,6 +11,7 @@ import {
   type Technology,
   type GuyedState,
   type SelectorInput,
+  type Product,
 } from "@/lib/recommendation-engine";
 
 type Selections = {
